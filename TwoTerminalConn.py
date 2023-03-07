@@ -96,16 +96,16 @@ def compute_prob_tables(dps:List,T_prob_tables:Dict):
     Returns:
         The probability tables for the disjoint paths
     '''
-    s = loc['S'] # the locality set of node 'S'
-    t = loc['T'] # the locality set of node 'T'
-    prob_tables = {}
-    rows_num = len(s)
-    columns_num = len(t)
+    s:List = loc['S'] # the locality set of node 'S'
+    t:List = loc['T'] # the locality set of node 'T'
+    prob_tables:Dict = {}
+    rows_num:int = len(s)
+    columns_num:int = len(t)
     
     for dp in dps: 
         prob = pd.DataFrame(0,index=range(rows_num), columns= range(columns_num)) # size of the table is |Loc_s| * |Loc_t|
-        first_node = dp[0]
-        last_node = dp[-1]
+        first_node:str = dp[0]
+        last_node:str = dp[-1]
 
         links_s_first = __get_links('S',first_node)
         links_last_t = __get_links(last_node,'T')
@@ -129,6 +129,8 @@ def compute_prob_tables(dps:List,T_prob_tables:Dict):
         prob_tables[tuple(dp)] = prob
 
     return prob_tables
+# %%
+def compute_prob()
 # %%
 def __get_links(x:str, y:str)->pd.DataFrame:
     '''
