@@ -50,6 +50,7 @@ dp1:List = ['A','B','C','D']
 dp2:List = ['E','F']
 dps:List = [dp1, dp2]
 
+#%%
 def compute_T_prob(dps:List,loc:Dict,loc_links:pd.DataFrame)->Dict:
     '''
     Compute the T_probability tables for the disjoint-paths
@@ -76,14 +77,14 @@ def compute_T_prob(dps:List,loc:Dict,loc_links:pd.DataFrame)->Dict:
             rows_num = len(loc[node])
             columns_num = len(y)
 
-            z = pd.DataFrame(0, index=range(first_rows_num), columns= range(columns_num)) # |Loc_x| * |Loc_y| 
+            z = pd.DataFrame(0.0, index=range(first_rows_num), columns= range(columns_num)) # |Loc_x| * |Loc_y| 
             links:pd.DataFrame = __get_links(node,next_node)
-
             for k in range(rows_num):
                 for l in range(columns_num):
                     if links.iat[k,l] == 1: # there is an edge
+                        
                         if i == 0: # the first two nodes in a disjoint-path
-                            z.iat[k,l] += x[k]*y[l] 
+                            z.iat[k,l] = z.iat[k,l] +  x[k]*y[l]
                         else:
                             
                             column_vals = x.iloc[:,k]
@@ -92,6 +93,7 @@ def compute_T_prob(dps:List,loc:Dict,loc_links:pd.DataFrame)->Dict:
                                 z.iat[index,l] += val * y[l]
             x = z
         T_prob_tables[tuple(dp)]= z
+        
 
     return T_prob_tables
 
@@ -115,7 +117,7 @@ def compute_prob_tables(dps:List,T_prob_tables:Dict)->Dict:
     columns_num:int = len(t)
     
     for dp in dps: 
-        prob = pd.DataFrame(0,index=range(rows_num), columns= range(columns_num)) # size of the table is |Loc_s| * |Loc_t|
+        prob = pd.DataFrame(0.0,index=range(rows_num), columns= range(columns_num)) # size of the table is |Loc_s| * |Loc_t|
         first_node:str = dp[0]
         last_node:str = dp[-1]
         
@@ -156,7 +158,7 @@ def compute_prob(dps:List, prob_tables:Dict)->pd.DataFrame:
     t:List = loc['T'] # the locality set of node 'T'
     rows_num:int = len(s)
     columns_num:int = len(t)
-    prob = pd.DataFrame(0, index= range(rows_num), columns=range(columns_num))
+    prob = pd.DataFrame(0.0, index= range(rows_num), columns=range(columns_num))
     for i in range(rows_num):
         for j in range(columns_num):
             temp:int = 1
@@ -210,7 +212,7 @@ def __get_links(x:str, y:str)->pd.DataFrame:
     links_x_y = links_x_y.dropna() # remove NaN values
     rows_num = len(links_x_y)
     columns_num = len(links_x_y[0])
-    links = pd.DataFrame(0,index=range(rows_num), columns=range(columns_num)) 
+    links = pd.DataFrame(0.0,index=range(rows_num), columns=range(columns_num)) 
     for r in range(rows_num):
         for c in range(columns_num):
             links.iat[r,c] = links_x_y[r][c]
@@ -218,4 +220,7 @@ def __get_links(x:str, y:str)->pd.DataFrame:
 # %%
 twoT_conn =  compute_2T_conn(dps,loc,loc_links)
 print(twoT_conn)
+# %%
+
+# %%
 # %%
