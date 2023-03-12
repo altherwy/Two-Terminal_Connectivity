@@ -78,7 +78,7 @@ def compute_T_prob(dps:List,loc:Dict,loc_links:pd.DataFrame)->Dict:
             columns_num = len(y)
 
             z = pd.DataFrame(0.0, index=range(first_rows_num), columns= range(columns_num)) # |Loc_x| * |Loc_y| 
-            links:pd.DataFrame = __get_links(node,next_node)
+            links:pd.DataFrame = get_links(node,next_node)
             for k in range(rows_num):
                 for l in range(columns_num):
                     if links.iat[k,l] == 1: # there is an edge
@@ -121,8 +121,8 @@ def compute_prob_tables(dps:List,T_prob_tables:Dict)->Dict:
         first_node:str = dp[0]
         last_node:str = dp[-1]
         
-        links_s_first = __get_links('S',first_node)
-        links_last_t = __get_links(last_node,'T')
+        links_s_first = get_links('S',first_node)
+        links_last_t = get_links(last_node,'T')
         T_prob_table = T_prob_tables[tuple(dp)] # T_probability table for a disjoint-path
 
         first_node_indices = T_prob_table.index.array
@@ -197,7 +197,7 @@ def compute_2T_conn(dps:List, loc:Dict, loc_links:pd.DataFrame)->int:
     
 
 # %%
-def __get_links(x:str, y:str)->pd.DataFrame:
+def get_links(x:str, y:str)->pd.DataFrame:
     '''
     Return the links (i.e., edges) table between two nodes x and y
 
