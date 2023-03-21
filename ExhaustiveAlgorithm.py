@@ -76,6 +76,5 @@ for i in range(len(node_loc)):
 # %%
 print(conn_prob)
 # %%
-indices = prob.loc[0]
-print(indices['S'])
+sum(conn_prob['Prob'])
 # %%
