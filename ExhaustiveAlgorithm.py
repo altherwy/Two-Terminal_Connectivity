@@ -73,8 +73,6 @@ for i in range(len(node_loc)):
     path:Dict = {'S':i}
     conn_path:Dict = {'S':i}
     rec(1,node_loc[i],i,path, conn_path)
-# %%
-print(conn_prob)
-# %%
-sum(conn_prob['Prob'])
+
+tot_conn = round(sum(prob.loc[prob['T'] != -1]['Prob']),2) # the total connectivity of the figure
 # %%

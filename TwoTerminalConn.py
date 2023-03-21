@@ -2,21 +2,19 @@
 #import DisjointPaths as DP
 import pandas as pd
 from typing import Dict,List
-'''
+
 class Two_Terminal():
-    def __init__(self, links:Dict, algorithm:str = 'MaxFlow') -> None:
+    def __init__(self, links:Dict, dps:List, loc:Dict, algorithm:str = 'MaxFlow') -> None:
         self.links = links
         self.algorithm = algorithm
-'''
+
 '''
 loc:Dict = {'A':[.2,.8], 'B':[.3,.2,.5], 'C':[.6,.4], 
             'D':[.5,.5], 'E':[1],
             'S':[.35,.65], 'T':[.1,.1,.8]}
-'''
-loc:Dict = {'A':[.15,.25,.3,.3], 'B':[.4,.2,.4], 'C':[.2,.3,.4,.1], 'D':[.4,.3,.3],
-            'E':[.5,.5], 'F':[.4,.6],
-            'S':[.3,.5,.2], 'T':[.8,.2]}
-'''
+
+
+
 # the links between nodes. For example, for nodes x and y, the format is as follows
 # {x_0:[y_0,y_1, ..., y_n], x_1:[y_0,y_1,..., y_n], ... , x_n:[y_0,y_1, ..., y_n]}
 loc_links = pd.DataFrame({('A','B'): {0:[1,1,0], 1:[1,1,1]},
@@ -27,8 +25,7 @@ loc_links = pd.DataFrame({('A','B'): {0:[1,1,0], 1:[1,1,1]},
                           ('S','D'): {0:[1,1], 1:[1,1]},
                           ('E','T'): {0:[1,1,1]},
                           })
-'''
-'''
+
 loc_links = pd.DataFrame({('A','B'): {0:[1,1,0], 1:[0,1,1], 2:[0,1,1], 3:[0,1,1]},
                           ('B','C'): {0:[1,1,1,0],1:[0,1,1,0], 2:[0,1,1,1]},
                           ('C','D'): {0:[1,1,0], 1:[0,1,0], 2:[0,1,1], 3:[0,1,1]},
@@ -36,19 +33,7 @@ loc_links = pd.DataFrame({('A','B'): {0:[1,1,0], 1:[0,1,1], 2:[0,1,1], 3:[0,1,1]
                           ('D','T'): {0:[1,1], 1:[1,0], 2:[1,1]},
                           })
 '''
-loc_links = pd.DataFrame({('A','B'): {0:[1,1,1], 1:[1,1,1], 2:[1,1,1], 3:[1,1,1]},
-                          ('B','C'): {0:[1,1,1,1],1:[1,1,1,1], 2:[1,1,1,1]},
-                          ('C','D'): {0:[0,1,1], 1:[1,1,1], 2:[1,1,1], 3:[1,1,1]},
-                          ('E','F'): {0:[1,1],1:[1,1]},
-                          ('S','A'): {0:[1,1,1,1], 1:[1,1,1,1], 2:[1,1,1,1]},
-                          ('D','T'): {0:[1,1], 1:[0,1], 2:[1,1]},
-                          ('S','E'): {0:[0,0],1:[0,0],2:[0,0]},
-                          ('F','T'): {0:[0,0],1:[0,0]}
-                          })
 
-dp1:List = ['A','B','C','D']
-dp2:List = ['E','F']
-dps:List = [dp1, dp2]
 
 #%%
 def compute_T_prob(dps:List,loc:Dict,loc_links:pd.DataFrame)->Dict:
@@ -217,10 +202,28 @@ def get_links(x:str, y:str)->pd.DataFrame:
         for c in range(columns_num):
             links.iat[r,c] = links_x_y[r][c]
     return links
-# %%
-twoT_conn =  compute_2T_conn(dps,loc,loc_links)
-print(twoT_conn)
-# %%
 
-# %%
-# %%
+
+
+def main():
+    loc:Dict = {'A':[.15,.25,.3,.3], 'B':[.4,.2,.4], 'C':[.2,.3,.4,.1], 'D':[.4,.3,.3],
+            'E':[.5,.5], 'F':[.4,.6],
+            'S':[.3,.5,.2], 'T':[.8,.2]}
+    loc_links = pd.DataFrame({('A','B'): {0:[1,1,1], 1:[1,1,1], 2:[1,1,1], 3:[1,1,1]},
+                            ('B','C'): {0:[1,1,1,1],1:[1,1,1,1], 2:[1,1,1,1]},
+                            ('C','D'): {0:[0,1,1], 1:[1,1,1], 2:[1,1,1], 3:[1,1,1]},
+                            ('E','F'): {0:[1,1],1:[1,1]},
+                            ('S','A'): {0:[1,1,1,1], 1:[1,1,1,1], 2:[1,1,1,1]},
+                            ('D','T'): {0:[1,1], 1:[0,1], 2:[1,1]},
+                            ('S','E'): {0:[0,0],1:[0,0],2:[0,0]},
+                            ('F','T'): {0:[0,0],1:[0,0]}
+                            })
+
+    dp1:List = ['A','B','C','D']
+    dp2:List = ['E','F']
+    dps:List = [dp1, dp2]
+    twoT_conn =  compute_2T_conn(dps,loc,loc_links)
+    print(twoT_conn)
+
+if __name__ == '__main__':
+    main()
