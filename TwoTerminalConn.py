@@ -221,6 +221,6 @@ def __get_links(x:str, y:str)->pd.DataFrame:
 twoT_conn =  compute_2T_conn(dps,loc,loc_links)
 print(twoT_conn)
 # %%
-
+2.3/.00025
 # %%
 # %%
