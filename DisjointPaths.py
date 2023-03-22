@@ -3,22 +3,22 @@ from Graph import *
 from typing import List,Dict,Tuple
 import GraphSSSP as sssp
 
-class DisjointPaths(object):
+class DisjointPaths:
 
     def __init__(self, links:Dict = None) -> None:
-        self.links:Dict = links
-        self.numNodes:int = len(self.links) + 1 # The number of nodes (+1 for T)
-        self.nodeLetters:List = list(self.links.keys()) # The nodes (e.g., S,A,B,C,...,T)
+        self.links:Dict = links # the graph
+        self.numNodes:int = len(self.links) + 1 # the number of nodes (+1 for T)
+        self.nodeLetters:List = list(self.links.keys()) # the nodes (e.g., S,A,B,C,...,T)
    
 
     def mainBuildGraph(self)->List:
         '''
-        Objective: build a 2D array to represent the Graph.
+        Build a 2D array to represent the Graph.
 
-        Parameters:
+        Args:
             links: Dictionary of each node and its neighbours as letters (e.g., 'S':['A','B'])
         
-        Output:
+        Returns:
             The graph as 2D array of 0s and 1s, where the 1s represent the edges between the nodes
         '''
         
@@ -52,12 +52,12 @@ class DisjointPaths(object):
 
     def runMaxFlow(self)->List:
         '''
-        Objective: run the Max Flow algorithm 
+        Run the Max Flow algorithm 
 
-        Parameters:
+        Args:
             links: The Graph 
         
-        Output:
+        Returns:
             The Disjoint paths as a 2D array of letters (e.g., [S,A,T],[S,C,D,T])
         '''
         
@@ -117,12 +117,12 @@ class DisjointPaths(object):
             
     def runSSSP(self)->Tuple[List,List]:
         '''
-        Objective: Run the Single Source Shortest Path (SSSP) algorithm
+        Run the Single Source Shortest Path (SSSP) algorithm
 
-        Parameters:
+        Args:
             links: The Graph
         
-        Output:
+        Returns:
             The Disjoint paths as a 2D array of letters (e.g., [S,A,T],[S,C,D,T])
             The node letter values (i.e., [S,A,....,T])
         '''
@@ -158,48 +158,50 @@ class DisjointPaths(object):
             for nodeIndex in relayNodes:
                 g.graph[nodeIndex] = len(g.graph[0]) * [0]
             graph = g.graph
-        
-        return disjointPaths,indexesValues
 
-
+            # turns the SSSP paths from number to letter (e.g., 0 to S, 1 to A, ...., n to S)    
+            def formatSSSP()->List:
+                final_paths = []
+                for path in disjointPaths:
+                    path.reverse()
+                    formated_path = []
+                    for node in path:
+                        letter:str = indexesValues[node]
+                        formated_path.append(letter)
+                    final_paths.append(formated_path)
+                return final_paths
+            
+        return formatSSSP()
     # Print the disjoint paths
-    def printPaths(self,disjointPaths:List,indexesValues:List = None,algorithm = 'Max Flow'):
+    def printPaths(self,disjointPaths:List, algorithm = 'Max Flow'):
         '''
-        Objective: Print the disjoint paths
+        Print the disjoint paths
 
-        Parameters:
+        Args:
             disjointPaths: The disjoint paths
             indexesValues: The node letter values (i.e., [S,A,....,T])
             Algorithm: Max Flow or SSSP
         
-        Output: 
+        Returns: 
             None
         '''
-        if algorithm == 'Max Flow':
-            print('Paths from Max Flow Algorithm')
-            for path in disjointPaths:
-                for node in path:
-                    if not node == 'T':
-                        print(node,end='->')
-                    else:
-                        print(node)
-        else:
-            print('Paths from SSSP Algorithm')
-            for path in disjointPaths:
-                path.reverse()
-                for node in path:
-                    letter:str = indexesValues[node]
-                    if not letter == 'T':
-                        print(letter, end='->')
-                    else:
-                        print(letter)
-    def main(self):
+        print_statement = 'Paths from Max Flow Algorithm' if algorithm == 'Max Flow' else 'Paths from SSSP Algorithm'
+        print(print_statement)
+        for path in disjointPaths:
+            for node in path:
+                if not node == 'T':
+                    print(node,end='->')
+                else:
+                    print(node)
+    def main(self) -> None:
 
         disjointPaths = self.runMaxFlow()
         self.printPaths(disjointPaths)
-        disjointPaths, indexesValues = self.runSSSP()
-        self.printPaths(disjointPaths,indexesValues,'SSSP') 
+
+        disjointPaths = self.runSSSP()
+        self.printPaths(disjointPaths,'SSSP') 
 if __name__ == '__main__':
+    '''
     links:Dict = { 
                 'S':['A','B','C','D','E'],
                 'A':['B','C','D','E','T'],
@@ -207,4 +209,14 @@ if __name__ == '__main__':
                 'C':['D','E','T'],
                 'D':['E','T'],
                 'E':['T']}
+    '''
+    links:Dict = {
+        'S':['A','E'],
+            'A':['B'],
+            'B':['C','F'],
+            'C':['D'],
+            'D':['T'],
+            'E':['F'],
+            'F':['T']
+    }
     DisjointPaths(links).main()

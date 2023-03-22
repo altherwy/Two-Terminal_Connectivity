@@ -76,3 +76,5 @@ for i in range(len(node_loc)):
 
 tot_conn = round(sum(prob.loc[prob['T'] != -1]['Prob']),2) # the total connectivity of the figure
 # %%
+
+# %%
