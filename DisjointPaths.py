@@ -1,9 +1,13 @@
 
+
 from Graph import *
 from typing import List,Dict,Tuple
 import GraphSSSP as sssp
 
 class DisjointPaths:
+    '''
+    Returns the disjoint paths from a given graph using Max flow and SSSP algorithms
+    '''
 
     def __init__(self, links:Dict = None) -> None:
         self.links:Dict = links # the graph
@@ -126,53 +130,55 @@ class DisjointPaths:
             The Disjoint paths as a 2D array of letters (e.g., [S,A,T],[S,C,D,T])
             The node letter values (i.e., [S,A,....,T])
         '''
-        graph, indexesValues = self.mainBuildGraph()
-        disjointPaths:List = []
+        graph, index_values = self.mainBuildGraph()
+        disjoint_paths:List = []
         while True:
             g = sssp.GraphSSSP(len(graph),graph)
             try:
                 g.dijkstra(0)
-            except:
+            except Exception as e:
+                print(e)
                 break
-            sourceNode:int = 0
-            sinkNode:int = len(graph) - 1
+            source_node:int = 0
+            sink_node:int = len(graph) - 1
 
-            targetNode:int = sinkNode
-            relayNodes:List = []
-            if  not sinkNode in g.results:
+            target_node:int = sink_node
+            relay_nodes:List = []
+            if  not sink_node in g.results:
                 break
-            disjointPath = []
+            disjoint_path = []
             while True:
-                node:int = g.results[targetNode]
-                disjointPath.append(targetNode)
-                if not node == sinkNode and not node == sourceNode:
-                    relayNodes.append(node)
-                    targetNode = node
+                node:int = g.results[target_node]
+                disjoint_path.append(target_node)
+                if not node == sink_node and not node == source_node:
+                    relay_nodes.append(node)
+                    target_node = node
                 else:
-                    disjointPath.append(0)
-                    disjointPaths.append(disjointPath)
+                    disjoint_path.append(0)
+                    disjoint_paths.append(disjoint_path)
                     break
                 
                     
             
-            for nodeIndex in relayNodes:
-                g.graph[nodeIndex] = len(g.graph[0]) * [0]
+            for node_index in relay_nodes:
+                g.graph[node_index] = len(g.graph[0]) * [0]
             graph = g.graph
 
             # turns the SSSP paths from number to letter (e.g., 0 to S, 1 to A, ...., n to S)    
-            def formatSSSP()->List:
+            
+            
+        return self.__formatSSSP(disjoint_paths,index_values)
+    
+    def __formatSSSP(self, disjoint_paths, index_values)->List:
                 final_paths = []
-                for path in disjointPaths:
+                for path in disjoint_paths:
                     path.reverse()
                     formated_path = []
                     for node in path:
-                        letter:str = indexesValues[node]
+                        letter:str = index_values[node]
                         formated_path.append(letter)
                     final_paths.append(formated_path)
                 return final_paths
-            
-        return formatSSSP()
-    # Print the disjoint paths
     def printPaths(self,disjointPaths:List, algorithm = 'Max Flow'):
         '''
         Print the disjoint paths
