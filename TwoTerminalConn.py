@@ -1,9 +1,11 @@
-#%%
 from DisjointPaths import DisjointPaths
 import pandas as pd
 from typing import Dict,List
 
 class Two_Terminal:
+    '''
+    Computes the connectivity between two nodes (terminals) on a node disjoint path graph
+    '''
     def __init__(self, dps:List=None, links:List = None, loc:Dict=None, loc_links:pd.DataFrame = None, algorithm:str = 'MaxFlow') -> None:
 
          
@@ -19,32 +21,7 @@ class Two_Terminal:
             self.dps = [path[1:-1] for path in paths] # the disjoint paths without terminals (i.e., without S and T)
         else:
             self.dps = dps # the disjoint paths 
-
-
-    '''
-    loc:Dict = {'A':[.2,.8], 'B':[.3,.2,.5], 'C':[.6,.4], 
-                'D':[.5,.5], 'E':[1],
-                'S':[.35,.65], 'T':[.1,.1,.8]}
-
-
-    loc_links = pd.DataFrame({('A','B'): {0:[1,1,0], 1:[1,1,1]},
-                            ('B','C'): {0:[1,0],1:[1,1], 2:[0,1]},
-                            ('S','A'): {0:[1,1], 1:[0,1]},
-                            ('C','T'):{0:[0,1,1],1:[0,0,1]},
-                            ('D','E'): {0:[1],1:[1]},
-                            ('S','D'): {0:[1,1], 1:[1,1]},
-                            ('E','T'): {0:[1,1,1]},
-                            })
-
-    loc_links = pd.DataFrame({('A','B'): {0:[1,1,0], 1:[0,1,1], 2:[0,1,1], 3:[0,1,1]},
-                            ('B','C'): {0:[1,1,1,0],1:[0,1,1,0], 2:[0,1,1,1]},
-                            ('C','D'): {0:[1,1,0], 1:[0,1,0], 2:[0,1,1], 3:[0,1,1]},
-                            ('S','A'): {0:[1,1,0,0], 1:[1,1,1,0], 2:[0,0,1,1]},
-                            ('D','T'): {0:[1,1], 1:[1,0], 2:[1,1]},
-                            })
-    '''
-
-
+    
     def compute_T_prob(self)->Dict:
         '''
         Compute the T_probability tables for the disjoint-paths
@@ -220,8 +197,9 @@ class Two_Terminal:
                                 ('E','F'): {0:[1,1],1:[1,1]},
                                 ('S','A'): {0:[1,1,1,1], 1:[1,1,1,1], 2:[1,1,1,1]},
                                 ('D','T'): {0:[1,1], 1:[0,1], 2:[1,1]},
-                                ('S','E'): {0:[0,0],1:[0,0],2:[0,0]},
-                                ('F','T'): {0:[0,0],1:[0,0]}
+                                ('S','E'): {0:[1,1],1:[0,1],2:[0,1]},
+                                ('B','T'): {0:[1,0],1:[0,0],2:[0,0]},
+                                ('F','T'): {0:[1,0],1:[1,1]}
                                 })
         twoT_conn = self.compute_2T_conn()
         print(twoT_conn)
@@ -230,7 +208,7 @@ if __name__ == '__main__':
     links:Dict = {
         'S':['A','E'],
         'A':['B'],
-        'B':['C','F'],
+        'B':['C','F','T'],
         'C':['D'],
         'D':['T'],
         'E':['F'],

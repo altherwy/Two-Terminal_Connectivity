@@ -2,7 +2,7 @@
 #from TwoTerminalConn import *
 import pandas as pd
 from typing import Dict,List
-
+'''
 nodes = ['S','A','B','T']
 loc:Dict = {'S':[.6,.4], 'A':[.7,.3], 'B':[.5,.5], 'T':[.8,.2]}
 
@@ -12,14 +12,29 @@ loc_links = pd.DataFrame({('S','A'): {0:[1,0], 1:[0,1]},
                           ('A','T'): {0:[1,0], 1:[1,0]},
                           ('B','T'): {0:[1,1], 1:[0,1]},
                           })
-prob= pd.DataFrame({}, columns=['S','A','B','T','Prob'])
-conn_prob = pd.DataFrame({}, columns=['S','A','B','T','Prob'])
+'''
+nodes = ['S','A','B','C','D','E','F','T']
+loc:Dict = {'A':[.15,.25,.3,.3], 'B':[.4,.2,.4], 'C':[.2,.3,.4,.1], 'D':[.4,.3,.3],
+                'E':[.5,.5], 'F':[.4,.6],
+                'S':[.3,.5,.2], 'T':[.8,.2]}
+loc_links = pd.DataFrame({('A','B'): {0:[1,1,1], 1:[1,1,1], 2:[1,1,1], 3:[1,1,1]},
+                                ('B','C'): {0:[1,1,1,1],1:[1,1,1,1], 2:[1,1,1,1]},
+                                ('C','D'): {0:[0,1,1], 1:[1,1,1], 2:[1,1,1], 3:[1,1,1]},
+                                ('E','F'): {0:[1,1],1:[1,1]},
+                                ('S','A'): {0:[1,1,1,1], 1:[1,1,1,1], 2:[1,1,1,1]},
+                                ('D','T'): {0:[1,1], 1:[0,1], 2:[1,1]},
+                                ('S','E'): {0:[1,1],1:[0,1],2:[0,1]},
+                                ('B','T'): {0:[1,0],1:[0,0],2:[0,0]},
+                                ('F','T'): {0:[1,0],1:[1,1]}
+                                })
+columns:List = nodes
+columns.append('Probability')
 
-def rec(node_ind:int, s_p:int, loc_ind:int, path:Dict, conn_path:Dict):
-    node:str = nodes[node_ind]
-    prev_node:str = nodes[node_ind-1]
-    #path[prev_node] = loc_ind
-    
+prob= pd.DataFrame({}, columns=columns)
+conn_prob = pd.DataFrame({}, columns=columns)
+
+def exhaustive_algorithm(node_ind:int, s_p:int, path:Dict, conn_path:Dict):
+    node:str = nodes[node_ind]    
     node_loc:List = loc[node]
 
 
@@ -30,7 +45,7 @@ def rec(node_ind:int, s_p:int, loc_ind:int, path:Dict, conn_path:Dict):
         path:Dict = __check_connection(node,j,path)
         if node != 'T':
             node_ind += 1 # next node in nodes list
-            node_ind= rec(node_ind,s_p,j,path, conn_path)
+            node_ind= exhaustive_algorithm(node_ind,s_p,path, conn_path)
             s_p /= p
         else:
             
@@ -68,13 +83,14 @@ def __check_connection(node:str, index:int, path:Dict)->Dict:
     return path
 
 #%%
+tot_conn = 0
 node_loc:List = loc['S']
 for i in range(len(node_loc)):
     path:Dict = {'S':i}
     conn_path:Dict = {'S':i}
-    rec(1,node_loc[i],i,path, conn_path)
+    exhaustive_algorithm(1,node_loc[i],path, conn_path)
 
-tot_conn = round(sum(prob.loc[prob['T'] != -1]['Prob']),2) # the total connectivity of the figure
+tot_conn = round(sum(prob.loc[prob['T'] != -1]['Probability']),7) # the total connectivity of the graph
 # %%
-
+tot_conn
 # %%
