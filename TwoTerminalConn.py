@@ -1,226 +1,239 @@
 #%%
-#import DisjointPaths as DP
+from DisjointPaths import DisjointPaths
 import pandas as pd
 from typing import Dict,List
-'''
-class Two_Terminal():
-    def __init__(self, links:Dict, algorithm:str = 'MaxFlow') -> None:
-        self.links = links
-        self.algorithm = algorithm
-'''
-'''
-loc:Dict = {'A':[.2,.8], 'B':[.3,.2,.5], 'C':[.6,.4], 
-            'D':[.5,.5], 'E':[1],
-            'S':[.35,.65], 'T':[.1,.1,.8]}
-'''
-loc:Dict = {'A':[.15,.25,.3,.3], 'B':[.4,.2,.4], 'C':[.2,.3,.4,.1], 'D':[.4,.3,.3],
-            'E':[.5,.5], 'F':[.4,.6],
-            'S':[.3,.5,.2], 'T':[.8,.2]}
-'''
-# the links between nodes. For example, for nodes x and y, the format is as follows
-# {x_0:[y_0,y_1, ..., y_n], x_1:[y_0,y_1,..., y_n], ... , x_n:[y_0,y_1, ..., y_n]}
-loc_links = pd.DataFrame({('A','B'): {0:[1,1,0], 1:[1,1,1]},
-                          ('B','C'): {0:[1,0],1:[1,1], 2:[0,1]},
-                          ('S','A'): {0:[1,1], 1:[0,1]},
-                          ('C','T'):{0:[0,1,1],1:[0,0,1]},
-                          ('D','E'): {0:[1],1:[1]},
-                          ('S','D'): {0:[1,1], 1:[1,1]},
-                          ('E','T'): {0:[1,1,1]},
-                          })
-'''
-'''
-loc_links = pd.DataFrame({('A','B'): {0:[1,1,0], 1:[0,1,1], 2:[0,1,1], 3:[0,1,1]},
-                          ('B','C'): {0:[1,1,1,0],1:[0,1,1,0], 2:[0,1,1,1]},
-                          ('C','D'): {0:[1,1,0], 1:[0,1,0], 2:[0,1,1], 3:[0,1,1]},
-                          ('S','A'): {0:[1,1,0,0], 1:[1,1,1,0], 2:[0,0,1,1]},
-                          ('D','T'): {0:[1,1], 1:[1,0], 2:[1,1]},
-                          })
-'''
-loc_links = pd.DataFrame({('A','B'): {0:[1,1,1], 1:[1,1,1], 2:[1,1,1], 3:[1,1,1]},
-                          ('B','C'): {0:[1,1,1,1],1:[1,1,1,1], 2:[1,1,1,1]},
-                          ('C','D'): {0:[0,1,1], 1:[1,1,1], 2:[1,1,1], 3:[1,1,1]},
-                          ('E','F'): {0:[1,1],1:[1,1]},
-                          ('S','A'): {0:[1,1,1,1], 1:[1,1,1,1], 2:[1,1,1,1]},
-                          ('D','T'): {0:[1,1], 1:[0,1], 2:[1,1]},
-                          ('S','E'): {0:[0,0],1:[0,0],2:[0,0]},
-                          ('F','T'): {0:[0,0],1:[0,0]}
-                          })
 
-dp1:List = ['A','B','C','D']
-dp2:List = ['E','F']
-dps:List = [dp1, dp2]
+class Two_Terminal:
+    def __init__(self, dps:List=None, links:List = None, loc:Dict=None, loc_links:pd.DataFrame = None, algorithm:str = 'MaxFlow') -> None:
 
-#%%
-def compute_T_prob(dps:List,loc:Dict,loc_links:pd.DataFrame)->Dict:
+         
+        self.loc = loc # the locality sets of all nodes 
+        self.loc_links = loc_links # the links between nodes. For example, for nodes x and y, the format is as follows
+                                #{x_0:[y_0,y_1, ..., y_n], x_1:[y_0,y_1,..., y_n], ... , x_n:[y_0,y_1, ..., y_n]}
+        self.algorithm = algorithm # the algorithm that returns the disjoint paths
+
+        # dps is empty
+        if dps is None:
+            dis_paths = DisjointPaths(links)
+            paths = dis_paths.runMaxFlow() if self.algorithm == 'MaxFlow' else dis_paths.runSSSP() 
+            self.dps = [path[1:-1] for path in paths] # the disjoint paths without terminals (i.e., without S and T)
+        else:
+            self.dps = dps # the disjoint paths 
+
+
     '''
-    Compute the T_probability tables for the disjoint-paths
+    loc:Dict = {'A':[.2,.8], 'B':[.3,.2,.5], 'C':[.6,.4], 
+                'D':[.5,.5], 'E':[1],
+                'S':[.35,.65], 'T':[.1,.1,.8]}
 
-    Args:
-        dps (list): Disjoint-paths
-        loc (dict): Locality sets of all nodes 
-        loc_links (Dataframe): The links between nodes. For example, for nodes x and y, the format is as follows
-                            {x_0:[y_0,y_1, ..., y_n], x_1:[y_0,y_1,..., y_n], ... , x_n:[y_0,y_1, ..., y_n]} 
-    
-    Returns:
-        The T_probability tables for the disjoint-paths
+
+    loc_links = pd.DataFrame({('A','B'): {0:[1,1,0], 1:[1,1,1]},
+                            ('B','C'): {0:[1,0],1:[1,1], 2:[0,1]},
+                            ('S','A'): {0:[1,1], 1:[0,1]},
+                            ('C','T'):{0:[0,1,1],1:[0,0,1]},
+                            ('D','E'): {0:[1],1:[1]},
+                            ('S','D'): {0:[1,1], 1:[1,1]},
+                            ('E','T'): {0:[1,1,1]},
+                            })
+
+    loc_links = pd.DataFrame({('A','B'): {0:[1,1,0], 1:[0,1,1], 2:[0,1,1], 3:[0,1,1]},
+                            ('B','C'): {0:[1,1,1,0],1:[0,1,1,0], 2:[0,1,1,1]},
+                            ('C','D'): {0:[1,1,0], 1:[0,1,0], 2:[0,1,1], 3:[0,1,1]},
+                            ('S','A'): {0:[1,1,0,0], 1:[1,1,1,0], 2:[0,0,1,1]},
+                            ('D','T'): {0:[1,1], 1:[1,0], 2:[1,1]},
+                            })
     '''
-    T_prob_tables:Dict = {}
-    for dp in dps: 
-        for i in range(len(dp) - 1):
-            node:str = dp[i] # the current node i.e., 'A'
-            if i == 0: # the first node in the disjoint-path
-                x = loc[node] # the locality set of the first node (e.g., [.4,.6])
-                first_rows_num = len(x) # the rows number of the first node in the disjoint-path
-            next_node:str = dp[i+1]
-            y:List = loc[next_node]
 
-            rows_num = len(loc[node])
-            columns_num = len(y)
 
-            z = pd.DataFrame(0.0, index=range(first_rows_num), columns= range(columns_num)) # |Loc_x| * |Loc_y| 
-            links:pd.DataFrame = __get_links(node,next_node)
-            for k in range(rows_num):
-                for l in range(columns_num):
-                    if links.iat[k,l] == 1: # there is an edge
-                        
-                        if i == 0: # the first two nodes in a disjoint-path
-                            z.iat[k,l] = z.iat[k,l] +  x[k]*y[l]
-                        else:
+    def compute_T_prob(self)->Dict:
+        '''
+        Compute the T_probability tables for the disjoint-paths
+
+        Args:
+            dps (list): Disjoint-paths
+            loc (dict): Locality sets of all nodes 
+            loc_links (Dataframe): The links between nodes. For example, for nodes x and y, the format is as follows
+                                {x_0:[y_0,y_1, ..., y_n], x_1:[y_0,y_1,..., y_n], ... , x_n:[y_0,y_1, ..., y_n]} 
+        
+        Returns:
+            The T_probability tables for the disjoint-paths
+        '''
+        T_prob_tables:Dict = {}
+        for dp in self.dps: 
+            for i in range(len(dp) - 1):
+                node:str = dp[i] # the current node i.e., 'A'
+                if i == 0: # the first node in the disjoint-path
+                    x = self.loc[node] # the locality set of the first node (e.g., [.4,.6])
+                    first_rows_num = len(x) # the rows number of the first node in the disjoint-path
+                next_node:str = dp[i+1]
+                y:List = self.loc[next_node]
+
+                rows_num = len(self.loc[node])
+                columns_num = len(y)
+
+                z = pd.DataFrame(0.0, index=range(first_rows_num), columns= range(columns_num)) # |Loc_x| * |Loc_y| 
+                links:pd.DataFrame = self.get_links(node,next_node)
+                for k in range(rows_num):
+                    for l in range(columns_num):
+                        if links.iat[k,l] == 1: # there is an edge
                             
-                            column_vals = x.iloc[:,k]
-                            indices = range(len(column_vals)) # indices length for node i in [i,j] 
-                            for val, index in zip(column_vals,indices):
-                                z.iat[index,l] += val * y[l]
-            x = z
-        T_prob_tables[tuple(dp)]= z
+                            if i == 0: # the first two nodes in a disjoint-path
+                                z.iat[k,l] = z.iat[k,l] +  x[k]*y[l]
+                            else:
+                                
+                                column_vals = x.iloc[:,k]
+                                indices = range(len(column_vals)) # indices length for node i in [i,j] 
+                                for val, index in zip(column_vals,indices):
+                                    z.iat[index,l] += val * y[l]
+                x = z
+            T_prob_tables[tuple(dp)]= z
+            
+
+        return T_prob_tables
+
+    def compute_prob_tables(self,T_prob_tables:Dict)->Dict:
+        '''
+        Compute the probability tables for the disjoint-paths
+
+        Args:
+            dps (list): Disjoint-paths
+            T_prob_tables (dict): T_probability tables for the disjoint-paths
+
+        Returns:
+            The probability tables for the disjoint paths
+        '''
+        s:List = self.loc['S'] # the locality set of node 'S'
+        t:List = self.loc['T'] # the locality set of node 'T'
+        prob_tables:Dict = {}
+        rows_num:int = len(s)
+        columns_num:int = len(t)
         
+        for dp in self.dps: 
+            prob = pd.DataFrame(0.0,index=range(rows_num), columns= range(columns_num)) # size of the table is |Loc_s| * |Loc_t|
+            first_node:str = dp[0]
+            last_node:str = dp[-1]
+            
+            links_s_first = self.get_links('S',first_node)
+            links_last_t = self.get_links(last_node,'T')
+            T_prob_table = T_prob_tables[tuple(dp)] # T_probability table for a disjoint-path
 
-    return T_prob_tables
+            first_node_indices = T_prob_table.index.array
+            last_node_indices = T_prob_table.columns.array
 
+            for i in range(rows_num):
+                for j in range(columns_num):
+                    for a in first_node_indices:
+                        for b in last_node_indices:
+                            try:
+                                if links_s_first.iat[i,a] == 1 and links_last_t.iat[b,j] == 1:
+                                    prob.iat[i,j] += T_prob_table.iat[a,b]
+                            except IndexError as err:
+                                    print('Error path:',i,'->',a,'->',b,'->',j)
+                                    pass
+                                
+            prob_tables[tuple(dp)] = prob
 
-# %%
-def compute_prob_tables(dps:List,T_prob_tables:Dict)->Dict:
-    '''
-    Compute the probability tables for the disjoint-paths
+        return prob_tables
 
-    Args:
-        dps (list): Disjoint-paths
-        T_prob_tables (dict): T_probability tables for the disjoint-paths
+    def compute_prob(self,prob_tables:Dict)->pd.DataFrame:
+        '''
+        Compute the probability table for the disjoint-paths
 
-    Returns:
-        The probability tables for the disjoint paths
-    '''
-    s:List = loc['S'] # the locality set of node 'S'
-    t:List = loc['T'] # the locality set of node 'T'
-    prob_tables:Dict = {}
-    rows_num:int = len(s)
-    columns_num:int = len(t)
-    
-    for dp in dps: 
-        prob = pd.DataFrame(0.0,index=range(rows_num), columns= range(columns_num)) # size of the table is |Loc_s| * |Loc_t|
-        first_node:str = dp[0]
-        last_node:str = dp[-1]
-        
-        links_s_first = __get_links('S',first_node)
-        links_last_t = __get_links(last_node,'T')
-        T_prob_table = T_prob_tables[tuple(dp)] # T_probability table for a disjoint-path
+        Args:
+            dps (list): Disjoint-paths
+            prob_tables (dict): The probability tables for the disjoint-paths
 
-        first_node_indices = T_prob_table.index.array
-        last_node_indices = T_prob_table.columns.array
-
+        Returns:
+            A single probability table for all disjoint paths
+        '''
+        s:List = self.loc['S'] # the locality set of node 'S'
+        t:List = self.loc['T'] # the locality set of node 'T'
+        rows_num:int = len(s)
+        columns_num:int = len(t)
+        prob = pd.DataFrame(0.0, index= range(rows_num), columns=range(columns_num))
         for i in range(rows_num):
             for j in range(columns_num):
-                for a in first_node_indices:
-                    for b in last_node_indices:
-                        try:
-                            if links_s_first.iat[i,a] == 1 and links_last_t.iat[b,j] == 1:
-                                prob.iat[i,j] += T_prob_table.iat[a,b]
-                        except IndexError as err:
-                                print('Error path:',i,'->',a,'->',b,'->',j)
-                                pass
-                            
-        prob_tables[tuple(dp)] = prob
+                temp:int = 1
+                for dp in self.dps:
+                    prob_table:pd.DataFrame = prob_tables[tuple(dp)]
+                    temp *= 1 - prob_table.iat[i,j]
+                prob.iat[i,j] = s[i]*t[j]*(1 - temp)
+        return prob    
 
-    return prob_tables
-# %%
-def compute_prob(dps:List, prob_tables:Dict)->pd.DataFrame:
-    '''
-    Compute the probability table for the disjoint-paths
+    def compute_2T_conn(self)->int:
+        '''
+        Compute the Two-Terminal connectivity
 
-    Args:
-        dps (list): Disjoint-paths
-        prob_tables (dict): The probability tables for the disjoint-paths
+        Args:
+            dps (list): Disjoint-paths
+            loc (dict): The locality sets for all nodes
+            loc_links (Dataframe): The links between nodes. For example, for nodes x and y, the format is as follows
+                                    {x_0:[y_0,y_1, ..., y_n], x_1:[y_0,y_1,..., y_n], ... , x_n:[y_0,y_1, ..., y_n]}
 
-    Returns:
-        A single probability table for all disjoint paths
-    '''
-    s:List = loc['S'] # the locality set of node 'S'
-    t:List = loc['T'] # the locality set of node 'T'
-    rows_num:int = len(s)
-    columns_num:int = len(t)
-    prob = pd.DataFrame(0.0, index= range(rows_num), columns=range(columns_num))
-    for i in range(rows_num):
-        for j in range(columns_num):
-            temp:int = 1
-            for dp in dps:
-                prob_table:pd.DataFrame = prob_tables[tuple(dp)]
-                temp *= 1 - prob_table.iat[i,j]
-            prob.iat[i,j] = s[i]*t[j]*(1 - temp)
-    return prob    
-#%%
-def compute_2T_conn(dps:List, loc:Dict, loc_links:pd.DataFrame)->int:
-    '''
-    Compute the Two-Terminal connectivity
+        Returns:
+            The Two-Terminal connectivity between S and T
+        '''
+        T_prob_tables:Dict = self.compute_T_prob()
+        prob_tables:Dict = self.compute_prob_tables(T_prob_tables)
+        prob:pd.DataFrame = self.compute_prob(prob_tables) 
+        twoT_conn:int = 0
+        s:List = self.loc['S'] # the locality set of node 'S'
+        t:List = self.loc['T'] # the locality set of node 'T'
+        rows_num:int = len(s)
+        columns_num:int = len(t)
+        for i in range(rows_num):
+            for j in range(columns_num):
+                twoT_conn += prob.iat[i,j]
+        
+        return twoT_conn
+        
+    def get_links(self,x:str, y:str)->pd.DataFrame:
+        '''
+        Return the links (i.e., edges) table between two nodes x and y
 
-    Args:
-        dps (list): Disjoint-paths
-        loc (dict): The locality sets for all nodes
-        loc_links (Dataframe): The links between nodes. For example, for nodes x and y, the format is as follows
-                                {x_0:[y_0,y_1, ..., y_n], x_1:[y_0,y_1,..., y_n], ... , x_n:[y_0,y_1, ..., y_n]}
+        Args:
+            x (str): a node
+            y (str): a neighbouring node to x 
+        
+        Returns:
+            The links between nodes x and y as a pandas ``Dataframe``
+        '''
+        links_x_y = self.loc_links[(x,y)]      
+        links_x_y = links_x_y.dropna() # remove NaN values
+        rows_num = len(links_x_y)
+        columns_num = len(links_x_y[0])
+        links = pd.DataFrame(0.0,index=range(rows_num), columns=range(columns_num)) 
+        for r in range(rows_num):
+            for c in range(columns_num):
+                links.iat[r,c] = links_x_y[r][c]
+        return links
 
-    Returns:
-        The Two-Terminal connectivity between S and T
-    '''
-    T_prob_tables:Dict = compute_T_prob(dps,loc,loc_links)
-    prob_tables:Dict = compute_prob_tables(dps,T_prob_tables)
-    prob:pd.DataFrame = compute_prob(dps,prob_tables) 
-    twoT_conn:int = 0
-    s:List = loc['S'] # the locality set of node 'S'
-    t:List = loc['T'] # the locality set of node 'T'
-    rows_num:int = len(s)
-    columns_num:int = len(t)
-    for i in range(rows_num):
-        for j in range(columns_num):
-            twoT_conn += prob.iat[i,j]
-    
-    return twoT_conn
-    
 
-# %%
-def __get_links(x:str, y:str)->pd.DataFrame:
-    '''
-    Return the links (i.e., edges) table between two nodes x and y
 
-    Args:
-        x (str): a node
-        y (str): a neighbouring node to x 
-    
-    Returns:
-        The links between nodes x and y as a pandas ``Dataframe``
-    '''
-    links_x_y = loc_links[(x,y)]      
-    links_x_y = links_x_y.dropna() # remove NaN values
-    rows_num = len(links_x_y)
-    columns_num = len(links_x_y[0])
-    links = pd.DataFrame(0.0,index=range(rows_num), columns=range(columns_num)) 
-    for r in range(rows_num):
-        for c in range(columns_num):
-            links.iat[r,c] = links_x_y[r][c]
-    return links
-# %%
-twoT_conn =  compute_2T_conn(dps,loc,loc_links)
-print(twoT_conn)
-# %%
-2.3/.00025
-# %%
-# %%
+    def main(self) -> None:
+        self.loc:Dict = {'A':[.15,.25,.3,.3], 'B':[.4,.2,.4], 'C':[.2,.3,.4,.1], 'D':[.4,.3,.3],
+                'E':[.5,.5], 'F':[.4,.6],
+                'S':[.3,.5,.2], 'T':[.8,.2]}
+        self.loc_links = pd.DataFrame({('A','B'): {0:[1,1,1], 1:[1,1,1], 2:[1,1,1], 3:[1,1,1]},
+                                ('B','C'): {0:[1,1,1,1],1:[1,1,1,1], 2:[1,1,1,1]},
+                                ('C','D'): {0:[0,1,1], 1:[1,1,1], 2:[1,1,1], 3:[1,1,1]},
+                                ('E','F'): {0:[1,1],1:[1,1]},
+                                ('S','A'): {0:[1,1,1,1], 1:[1,1,1,1], 2:[1,1,1,1]},
+                                ('D','T'): {0:[1,1], 1:[0,1], 2:[1,1]},
+                                ('S','E'): {0:[0,0],1:[0,0],2:[0,0]},
+                                ('F','T'): {0:[0,0],1:[0,0]}
+                                })
+        twoT_conn = self.compute_2T_conn()
+        print(twoT_conn)
+
+if __name__ == '__main__':
+    links:Dict = {
+        'S':['A','E'],
+        'A':['B'],
+        'B':['C','F'],
+        'C':['D'],
+        'D':['T'],
+        'E':['F'],
+        'F':['T']
+    }
+    Two_Terminal(links=links).main()
