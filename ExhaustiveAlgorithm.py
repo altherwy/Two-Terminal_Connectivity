@@ -1,18 +1,5 @@
-#%%
-#from TwoTerminalConn import *
 import pandas as pd
 from typing import Dict,List
-'''
-nodes = ['S','A','B','T']
-loc:Dict = {'S':[.6,.4], 'A':[.7,.3], 'B':[.5,.5], 'T':[.8,.2]}
-
-loc_links = pd.DataFrame({('S','A'): {0:[1,0], 1:[0,1]},
-                          ('S','B'): {0:[0,0], 1:[1,1]},
-                          ('A','B'): {0:[1,0], 1:[1,1]},
-                          ('A','T'): {0:[1,0], 1:[1,0]},
-                          ('B','T'): {0:[1,1], 1:[0,1]},
-                          })
-'''
 nodes = ['S','A','B','C','D','E','F','T']
 loc:Dict = {'A':[.15,.25,.3,.3], 'B':[.4,.2,.4], 'C':[.2,.3,.4,.1], 'D':[.4,.3,.3],
                 'E':[.5,.5], 'F':[.4,.6],
@@ -82,7 +69,6 @@ def __check_connection(node:str, index:int, path:Dict)->Dict:
     path[node] = -1
     return path
 
-#%%
 tot_conn = 0
 node_loc:List = loc['S']
 for i in range(len(node_loc)):
@@ -91,6 +77,15 @@ for i in range(len(node_loc)):
     exhaustive_algorithm(1,node_loc[i],path, conn_path)
 
 tot_conn = round(sum(prob.loc[prob['T'] != -1]['Probability']),7) # the total connectivity of the graph
-# %%
-tot_conn
-# %%
+print(tot_conn)
+'''
+nodes = ['S','A','B','T']
+loc:Dict = {'S':[.6,.4], 'A':[.7,.3], 'B':[.5,.5], 'T':[.8,.2]}
+
+loc_links = pd.DataFrame({('S','A'): {0:[1,0], 1:[0,1]},
+                          ('S','B'): {0:[0,0], 1:[1,1]},
+                          ('A','B'): {0:[1,0], 1:[1,1]},
+                          ('A','T'): {0:[1,0], 1:[1,0]},
+                          ('B','T'): {0:[1,1], 1:[0,1]},
+                          })
+'''
