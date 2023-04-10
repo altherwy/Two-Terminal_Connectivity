@@ -222,6 +222,7 @@ class DisjointPaths:
 
         disjoint_paths = self.runSSSP()
         self.printPaths(disjoint_paths,'SSSP') 
+
 if __name__ == '__main__':
     '''
     graph:dict = { 

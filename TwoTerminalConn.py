@@ -1,12 +1,11 @@
 from DisjointPaths import DisjointPaths
 import pandas as pd
-from typing import Dict,List
 
-class Two_Terminal:
+class TwoTerminal:
     '''
     Computes the connectivity between two nodes (terminals) on a node disjoint path graph
     '''
-    def __init__(self, dps:List=None, links:List = None, loc:Dict=None, loc_links:pd.DataFrame = None, algorithm:str = 'MaxFlow') -> None:
+    def __init__(self, dps:list=None, links:list = None, loc:dict=None, loc_links:pd.DataFrame = None, algorithm:str = 'MaxFlow') -> None:
 
          
         self.loc = loc # the locality sets of all nodes 
@@ -22,7 +21,7 @@ class Two_Terminal:
         else:
             self.dps = dps # the disjoint paths 
     
-    def compute_T_prob(self)->Dict:
+    def compute_T_prob(self)->dict:
         '''
         Compute the T_probability tables for the disjoint-paths
 
@@ -35,7 +34,7 @@ class Two_Terminal:
         Returns:
             The T_probability tables for the disjoint-paths
         '''
-        T_prob_tables:Dict = {}
+        T_prob_tables:dict = {}
         for dp in self.dps: 
             for i in range(len(dp) - 1):
                 node:str = dp[i] # the current node i.e., 'A'
@@ -43,7 +42,7 @@ class Two_Terminal:
                     x = self.loc[node] # the locality set of the first node (e.g., [.4,.6])
                     first_rows_num = len(x) # the rows number of the first node in the disjoint-path
                 next_node:str = dp[i+1]
-                y:List = self.loc[next_node]
+                y:list = self.loc[next_node]
 
                 rows_num = len(self.loc[node])
                 columns_num = len(y)
@@ -68,7 +67,7 @@ class Two_Terminal:
 
         return T_prob_tables
 
-    def compute_prob_tables(self,T_prob_tables:Dict)->Dict:
+    def compute_prob_tables(self,T_prob_tables:dict)->dict:
         '''
         Compute the probability tables for the disjoint-paths
 
@@ -79,9 +78,9 @@ class Two_Terminal:
         Returns:
             The probability tables for the disjoint paths
         '''
-        s:List = self.loc['S'] # the locality set of node 'S'
-        t:List = self.loc['T'] # the locality set of node 'T'
-        prob_tables:Dict = {}
+        s:list = self.loc['S'] # the locality set of node 'S'
+        t:list = self.loc['T'] # the locality set of node 'T'
+        prob_tables:dict = {}
         rows_num:int = len(s)
         columns_num:int = len(t)
         
@@ -112,7 +111,7 @@ class Two_Terminal:
 
         return prob_tables
 
-    def compute_prob(self,prob_tables:Dict)->pd.DataFrame:
+    def compute_prob(self,prob_tables:dict)->pd.DataFrame:
         '''
         Compute the probability table for the disjoint-paths
 
@@ -123,8 +122,8 @@ class Two_Terminal:
         Returns:
             A single probability table for all disjoint paths
         '''
-        s:List = self.loc['S'] # the locality set of node 'S'
-        t:List = self.loc['T'] # the locality set of node 'T'
+        s:list = self.loc['S'] # the locality set of node 'S'
+        t:list = self.loc['T'] # the locality set of node 'T'
         rows_num:int = len(s)
         columns_num:int = len(t)
         prob = pd.DataFrame(0.0, index= range(rows_num), columns=range(columns_num))
@@ -150,12 +149,12 @@ class Two_Terminal:
         Returns:
             The Two-Terminal connectivity between S and T
         '''
-        T_prob_tables:Dict = self.compute_T_prob()
-        prob_tables:Dict = self.compute_prob_tables(T_prob_tables)
+        T_prob_tables:dict = self.compute_T_prob()
+        prob_tables:dict = self.compute_prob_tables(T_prob_tables)
         prob:pd.DataFrame = self.compute_prob(prob_tables) 
         twoT_conn:int = 0
-        s:List = self.loc['S'] # the locality set of node 'S'
-        t:List = self.loc['T'] # the locality set of node 'T'
+        s:list = self.loc['S'] # the locality set of node 'S'
+        t:list = self.loc['T'] # the locality set of node 'T'
         rows_num:int = len(s)
         columns_num:int = len(t)
         for i in range(rows_num):
@@ -188,7 +187,7 @@ class Two_Terminal:
 
 
     def main(self) -> None:
-        self.loc:Dict = {'A':[.15,.25,.3,.3], 'B':[.4,.2,.4], 'C':[.2,.3,.4,.1], 'D':[.4,.3,.3],
+        self.loc:dict = {'A':[.15,.25,.3,.3], 'B':[.4,.2,.4], 'C':[.2,.3,.4,.1], 'D':[.4,.3,.3],
                 'E':[.5,.5], 'F':[.4,.6],
                 'S':[.3,.5,.2], 'T':[.8,.2]}
         self.loc_links = pd.DataFrame({('A','B'): {0:[1,1,1], 1:[1,1,1], 2:[1,1,1], 3:[1,1,1]},
@@ -205,7 +204,7 @@ class Two_Terminal:
         print(twoT_conn)
 
 if __name__ == '__main__':
-    links:Dict = {
+    links:dict = {
         'S':['A','E'],
         'A':['B'],
         'B':['C','F','T'],
@@ -214,4 +213,4 @@ if __name__ == '__main__':
         'E':['F'],
         'F':['T']
     }
-    Two_Terminal(links=links).main()
+    TwoTerminal(links=links).main()
