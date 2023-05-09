@@ -14,7 +14,7 @@ class Graph (object):
 
         # edge properties
         self.capacity = data
-        self.flow = np.zeros((n, n), dtype=np.int)
+        self.flow = np.zeros((n, n), dtype=int)
 
         self.size = n
         
