@@ -5,17 +5,17 @@ class TwoTerminal:
     '''
     Computes the connectivity between two nodes (terminals) on a node disjoint path graph
     '''
-    def __init__(self, dps:list=None, links:list = None, loc:dict=None, loc_links:pd.DataFrame = None, algorithm:str = 'MaxFlow') -> None:
+    def __init__(self, dps=None, links = None, loc=None, loc_links = None, algorithm:str = 'MaxFlow') -> None:
 
          
-        self.loc = loc # the locality sets of all nodes 
+        self.loc = loc # type: ignore # the locality sets of all nodes 
         self.loc_links = loc_links # the links between nodes. For example, for nodes x and y, the format is as follows
                                 #{x_0:[y_0,y_1, ..., y_n], x_1:[y_0,y_1,..., y_n], ... , x_n:[y_0,y_1, ..., y_n]}
         self.algorithm = algorithm # the algorithm that returns the disjoint paths
 
         # dps is empty
         if dps is None:
-            dis_paths = DisjointPaths(links)
+            dis_paths = DisjointPaths(links)# type: ignore
             paths = dis_paths.runMaxFlow() if self.algorithm == 'MaxFlow' else dis_paths.runSSSP() 
             self.dps = [path[1:-1] for path in paths] # the disjoint paths without terminals (i.e., without S and T)
         else:
