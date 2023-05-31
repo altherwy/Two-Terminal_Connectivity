@@ -194,16 +194,6 @@ def build_loc_set():
 loc = build_loc_set()
 
 # %%
-def get_connection():
-    for node_id in range(number_of_nodes):
-        df = node_positions_filtered.loc[node_positions_filtered['node_id'] == node_id]
-
-        for x,y,z in zip(df['x'],df['y'],df['z']): # type: ignore
-            pass
-
-get_connection()
-
-# %%
 # get the distance between the first and last coordinates of each node
 '''
 
@@ -266,4 +256,33 @@ def get_avg_distance():
         avg_distance += distance
     return round(avg_distance/number_of_nodes,0)
 get_avg_distance()
+# %%
+def build_underlying_graph(dis_threshold:int=400):
+    '''
+    Builds the connection between nodes based on the distance threshold
+    Args:
+        dis_threshold: the distance threshold
+    Returns:
+        None
+    '''
+    conn_list = {}
+    for node_id in range(number_of_nodes-1):
+        neighbor_list = [] # the list of neighbors of node i
+        df = node_positions_filtered.loc[node_positions_filtered['node_id'] == node_id]
+        coordinate_1 = df.iloc[0][['x','y','z']].values.tolist()
+        for node_id_2 in range(node_id+1,number_of_nodes):
+            df = node_positions_filtered.loc[node_positions_filtered['node_id'] == node_id_2]
+            coordinate_2 = df.iloc[0][['x','y','z']].values.tolist()
+            distance = get_distance(coordinate_1,coordinate_2)
+            if distance < dis_threshold:
+                neighbor_list.append(node_id_2)
+        conn_list[node_id] = neighbor_list
+    return conn_list
+
+build_underlying_graph(800)
+# %%
+num = 0
+for i in range(10):
+    num += 10-i
+print(num)
 # %%
