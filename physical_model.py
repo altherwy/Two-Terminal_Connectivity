@@ -13,7 +13,7 @@ def _generate_random_positions():
     counter = 0
     while counter < number_of_nodes:
         x = rand.randint(-500, 1*10**3)
-        y = rand.randint(-500, 0.5*10**3)
+        y = rand.randint(-500, 0.5*10**3) # type: ignore
         z = rand.randint(-500, -100)
         ps = rand.randint(1025, 1045) # density of the sensor
         counter += 1
@@ -114,7 +114,7 @@ def build_locality_set(dis_threshold:float = 0.83):
         x,y,z = zip(*node_positions.loc[node_id])
         add_flag = False
         temp_counter = 0
-        for x_pos,y_pos,z_pos in zip(x,y,z):
+        for x_pos,y_pos,z_pos in zip(x,y,z): # type: ignore
             if temp_counter == 0:
                 add_flag = True
             else:
@@ -123,7 +123,7 @@ def build_locality_set(dis_threshold:float = 0.83):
                 add_flag = not is_reachable(coordinate_1,coordinate_2,dis_threshold)
 
             if add_flag:        
-                node_positions_filtered.loc[counter] = [x_pos,y_pos,z_pos,node_id]    
+                node_positions_filtered.loc[counter] = [x_pos,y_pos,z_pos,node_id]     # type: ignore
                 counter += 1
                 temp_counter += 1
         
@@ -147,7 +147,7 @@ def plot_position_at_time(time:int):
     df_temp = pd.DataFrame(columns=['x','y','z','node_id'])
     for i in range(number_of_nodes):
         x,y,z,node_id = _get_coordinates(i,time)
-        df_temp.loc[i] = [x,y,z,node_id]
+        df_temp.loc[i] = [x,y,z,node_id] # type: ignore
     fig = px.scatter_3d(df_temp,x='x',y='y',z='z',color='node_id')
     fig.show()
 
