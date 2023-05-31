@@ -135,7 +135,7 @@ def build_locality_set(dis_threshold:float = 0.83):
 build_locality_set(1) # plot the positions of the nodes
 
 # %%
-def plot_position_at_time(_time:int):
+def plot_position_at_time(time:int):
     
     '''
     Plots the position of a node at a given time
@@ -146,7 +146,7 @@ def plot_position_at_time(_time:int):
     '''
     df_temp = pd.DataFrame(columns=['x','y','z','node_id'])
     for i in range(number_of_nodes):
-        x,y,z,node_id = list(node_positions_filtered.loc[i*loc_set_max + _time])
+        x,y,z,node_id = _get_coordinates(i,time)
         df_temp.loc[i] = [x,y,z,node_id]
     fig = px.scatter_3d(df_temp,x='x',y='y',z='z',color='node_id')
     fig.show()
@@ -155,4 +155,24 @@ plot_position_at_time(1) # plot the position of the nodes at time 1
 # %%
 
 node_positions_filtered
+# %%
+def _get_coordinates(node_id:int,time:int):
+    '''
+    Returns the coordinates of a node at a given time
+    Args:
+        node_id: the id of the node
+        time: the time at which the coordinates are to be returned
+    Returns:
+        coordinates: the coordinates of the node at the given time
+    '''
+    df = node_positions_filtered[node_positions_filtered['node_id'] == node_id]
+    if time >= len(df):
+        time = len(df)-1
+    coordinates = list(df.iloc[time][['x','y','z','node_id']])
+    return coordinates
+
+_get_coordinates(9,5) # get the coordinates of node 0 at time 1
+# %%
+def build_loc_set()
+
 # %%
