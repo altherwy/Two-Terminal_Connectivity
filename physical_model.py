@@ -153,9 +153,6 @@ def plot_position_at_time(time:int):
 
 plot_position_at_time(1) # plot the position of the nodes at time 1     
 # %%
-
-node_positions_filtered
-# %%
 def _get_coordinates(node_id:int,time:int):
     '''
     Returns the coordinates of a node at a given time
@@ -173,6 +170,6 @@ def _get_coordinates(node_id:int,time:int):
 
 _get_coordinates(9,5) # get the coordinates of node 0 at time 1
 # %%
-def build_loc_set()
+node_positions_filtered
 
 # %%

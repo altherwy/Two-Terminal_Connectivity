@@ -1,6 +1,7 @@
 import numpy as np
 
 
+
 class Graph (object):
     '''
     A flow graph object
@@ -9,7 +10,7 @@ class Graph (object):
     '''
 
     def __init__(self, data=None):
-        n, m = np.shape(data)
+        n, m = np.shape(data) # type: ignore
         assert n == m, "data must be square"
 
         # edge properties
@@ -28,7 +29,7 @@ class Graph (object):
 
 
         assert sum(self.capacity[-1]) == 0 and sum(self.capacity[:, 0]) \
-        == 0 , "source must be first, sink must be last"
+        == 0 , "source must be first, sink must be last" 
 
         self.source = 0
         self.sink = self.size - 1
