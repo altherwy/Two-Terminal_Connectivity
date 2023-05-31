@@ -7,8 +7,8 @@ class DisjointPaths:
     Returns the disjoint paths from a given graph using Max flow and SSSP algorithms
     '''
 
-    def __init__(self, graph:dict = None, start:str = 'S', goal:str = 'T') -> None:
-        self.graph:dict = graph # the graph
+    def __init__(self, graph, start = 'S', goal = 'T') -> None:
+        self.graph = graph # the graph 
         # the start node, usually 'S'
         self.start = start
         # the end node, usually 'T'
@@ -31,12 +31,12 @@ class DisjointPaths:
 
         indexes:dict = {'T':len(self.nodeLetters)} # {'S':0,'A':1,'B':2,...,'T':len(nodeLetters)}
         indexesValues:dict = {len(self.nodeLetters):'T'}
-        for letter,indexValue in zip(self.nodeLetters,range(len(self.nodeLetters))):
+        for letter,indexValue in zip(self.nodeLetters,range(len(self.nodeLetters))): # type: ignore
             indexes[letter] = indexValue
             indexesValues[indexValue] = letter
 
         # Build the graph
-        def buildGraph()-> np.array:
+        def buildGraph():
             graph:list= []
             for node in self.nodeLetters: # S
                 neighbours:list= self.graph[node] # The neighbours for each node (e.g., ['A','B','C'])
@@ -52,7 +52,7 @@ class DisjointPaths:
                 indexesList[indexes[neighbour]] = 1 # [0, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0]
             return indexesList
         
-        return buildGraph(),indexesValues
+        return buildGraph(),indexesValues # type: ignore
         
 
 
@@ -70,7 +70,7 @@ class DisjointPaths:
         graph,indexesValues = self.mainBuildGraph()
         EdmondKarp_graph = Graph(graph)
         dict_ = EdmondKarp_graph.EdmondKarp(data=True)
-        list_ = dict_['iteration']
+        list_ = dict_['iteration'] # type: ignore
         disjointPaths:list= []
         for path in list_:
             pathList = list(path.values())[0]
@@ -132,7 +132,7 @@ class DisjointPaths:
             The Disjoint paths as a 2D array of letters (e.g., [S,A,T],[S,C,D,T])
         '''
 
-        def __dijkstra_paths()->list:
+        def __dijkstra_paths():
             """Find all paths between start and goal vertices.
 
             Args:
@@ -155,7 +155,7 @@ class DisjointPaths:
                     else:
                         stack.append((next, path + [next]))
 
-        def __get_disjoint_paths(paths:list)->list:
+        def __get_disjoint_paths(paths:list):
             """
             This method takes a list of paths and returns a list of disjoint paths. 
             A path is considered disjoint if it does not share any nodes with any other path in the list (except the two terminal nodes).

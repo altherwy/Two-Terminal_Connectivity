@@ -5,7 +5,7 @@ class TwoTerminal:
     '''
     Computes the connectivity between two nodes (terminals) on a node disjoint path graph
     '''
-    def __init__(self, dps=None, links = None, loc=None, loc_links = None, algorithm:str = 'MaxFlow') -> None:
+    def __init__(self, links, loc, loc_links, dps = None, algorithm:str = 'MaxFlow'):
 
          
         self.loc = loc # type: ignore # the locality sets of all nodes 
@@ -35,6 +35,9 @@ class TwoTerminal:
             The T_probability tables for the disjoint-paths
         '''
         T_prob_tables:dict = {}
+        first_rows_num:int = 0
+        x = pd.DataFrame()
+        z = pd.DataFrame()
         for dp in self.dps: 
             for i in range(len(dp) - 1):
                 node:str = dp[i] # the current node i.e., 'A'
@@ -59,7 +62,7 @@ class TwoTerminal:
                                 
                                 column_vals = x.iloc[:,k]
                                 indices = range(len(column_vals)) # indices length for node i in [i,j] 
-                                for val, index in zip(column_vals,indices):
+                                for val, index in zip(column_vals,indices):# type: ignore
                                     z.iat[index,l] += val * y[l]
                 x = z
             T_prob_tables[tuple(dp)]= z
@@ -186,20 +189,7 @@ class TwoTerminal:
 
 
 
-    def main(self) -> None:
-        self.loc:dict = {'A':[.15,.25,.3,.3], 'B':[.4,.2,.4], 'C':[.2,.3,.4,.1], 'D':[.4,.3,.3],
-                'E':[.5,.5], 'F':[.4,.6],
-                'S':[.3,.5,.2], 'T':[.8,.2]}
-        self.loc_links = pd.DataFrame({('A','B'): {0:[1,1,1], 1:[1,1,1], 2:[1,1,1], 3:[1,1,1]},
-                                ('B','C'): {0:[1,1,1,1],1:[1,1,1,1], 2:[1,1,1,1]},
-                                ('C','D'): {0:[0,1,1], 1:[1,1,1], 2:[1,1,1], 3:[1,1,1]},
-                                ('E','F'): {0:[1,1],1:[1,1]},
-                                ('S','A'): {0:[1,1,1,1], 1:[1,1,1,1], 2:[1,1,1,1]},
-                                ('D','T'): {0:[1,1], 1:[0,1], 2:[1,1]},
-                                ('S','E'): {0:[1,1],1:[0,1],2:[0,1]},
-                                ('B','T'): {0:[1,0],1:[0,0],2:[0,0]},
-                                ('F','T'): {0:[1,0],1:[1,1]}
-                                })
+    def main(self):
         twoT_conn = self.compute_2T_conn()
         print(twoT_conn)
 
@@ -213,4 +203,17 @@ if __name__ == '__main__':
         'E':['F'],
         'F':['T']
     }
-    TwoTerminal(links=links).main()
+    loc:dict = {'A':[.15,.25,.3,.3], 'B':[.4,.2,.4], 'C':[.2,.3,.4,.1], 'D':[.4,.3,.3],
+                'E':[.5,.5], 'F':[.4,.6],
+                'S':[.3,.5,.2], 'T':[.8,.2]}
+    loc_links = pd.DataFrame({('A','B'): {0:[1,1,1], 1:[1,1,1], 2:[1,1,1], 3:[1,1,1]},
+                                ('B','C'): {0:[1,1,1,1],1:[1,1,1,1], 2:[1,1,1,1]},
+                                ('C','D'): {0:[0,1,1], 1:[1,1,1], 2:[1,1,1], 3:[1,1,1]},
+                                ('E','F'): {0:[1,1],1:[1,1]},
+                                ('S','A'): {0:[1,1,1,1], 1:[1,1,1,1], 2:[1,1,1,1]},
+                                ('D','T'): {0:[1,1], 1:[0,1], 2:[1,1]},
+                                ('S','E'): {0:[1,1],1:[0,1],2:[0,1]},
+                                ('B','T'): {0:[1,0],1:[0,0],2:[0,0]},
+                                ('F','T'): {0:[1,0],1:[1,1]}
+                                })
+    TwoTerminal(links=links, loc=loc, loc_links=loc_links).main()
