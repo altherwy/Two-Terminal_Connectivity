@@ -1,6 +1,5 @@
 #%%
-from math import pi
-from math import sin, cos,exp
+from math import sin, cos,exp, pi, inf
 import random as rand
 import plotly.express as px
 import pandas as pd
@@ -12,8 +11,8 @@ def _generate_random_positions():
     '''
     counter = 0
     while counter < number_of_nodes:
-        x = rand.randint(-500, 1*10**3)
-        y = rand.randint(-500, 0.5*10**3) # type: ignore
+        x = rand.randint(-1*10**3, 1*10**3)
+        y = rand.randint(-0.5*10**3, 0.5*10**3) # type: ignore
         z = rand.randint(-500, -100)
         ps = rand.randint(1025, 1045) # density of the sensor
         counter += 1
@@ -45,19 +44,18 @@ ac = C*Ac*alph
 
 days = 1 # number of days
 days_in_seconds = 86400 * days # Day(s) in seconds
-loc_set_max = 6 # maximum number of locality sets
+loc_set_max = 10 # maximum number of locality sets
 number_of_nodes = 10 # number of nodes
 interval = days_in_seconds//loc_set_max # interval between two locality sets
 node_positions = pd.DataFrame(index=range(number_of_nodes) ,columns=range(loc_set_max)) # dataframe to store the locations of the nodes at different times
-node_positions_filtered = pd.DataFrame(columns=['x','y','z','node_id'])
 node_initial_positions = list(_generate_random_positions()) # generator to generate random positions for the nodes
 
 # %% find if two nodes are connected (or the same node has two locality sets)
-is_reachable = lambda p1, p2, threshold: distance(p1, p2) <= threshold
+is_reachable = lambda p1, p2, threshold: get_distance(p1, p2) <= threshold
 
 # %% find the distance between two points in 3D space
 from math import sqrt
-def distance(p1, p2):
+def get_distance(p1, p2):
     x1, y1, z1 = p1
     x2, y2, z2 = p2
     return sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2 + (z2 - z1) ** 2)
@@ -101,6 +99,7 @@ def get_node_locations():
 
 get_node_locations()
 # %%
+node_positions_filtered = pd.DataFrame(columns=['x','y','z','node_id','pos_prob'])
 def build_locality_set(dis_threshold:float = 0.83):
     '''
     Plots the positions of the nodes
@@ -111,6 +110,7 @@ def build_locality_set(dis_threshold:float = 0.83):
     '''
     counter = 0
     for node_id in range(number_of_nodes):
+        pos_prob = 1/loc_set_max # probability of the node being at a specfic position
         x,y,z = zip(*node_positions.loc[node_id])
         add_flag = False
         temp_counter = 0
@@ -118,40 +118,29 @@ def build_locality_set(dis_threshold:float = 0.83):
             if temp_counter == 0:
                 add_flag = True
             else:
-                coordinate_1 =list(node_positions.loc[node_id][temp_counter-1])
+
+
+                #coordinate_1 =list(node_positions.loc[node_id][temp_counter-1])
+                last_row = node_positions_filtered.iloc[-1] # get the last row
+                coordinate_1 = last_row[['x', 'y', 'z']].values.tolist() # extract the coordinates as a list
                 coordinate_2 = [x_pos,y_pos,z_pos]
                 add_flag = not is_reachable(coordinate_1,coordinate_2,dis_threshold)
 
             if add_flag:        
-                node_positions_filtered.loc[counter] = [x_pos,y_pos,z_pos,node_id]     # type: ignore
+                node_positions_filtered.loc[counter] = [x_pos,y_pos,z_pos,node_id,pos_prob]     # type: ignore
                 counter += 1
-                temp_counter += 1
+                temp_counter += 1 
+                pos_prob = 1/loc_set_max # reset the probability
+            else:
+                pos_prob += 1/loc_set_max # increase the probability
         
         
     #fig = px.scatter_3d(node_positions_filtered,x='x',y='y',z='z',color='node_id')
     #fig.show()
 
 
-build_locality_set(1) # plot the positions of the nodes
+build_locality_set(1.4) # build the locality set with a distance threshold of 1
 
-# %%
-def plot_position_at_time(time:int):
-    
-    '''
-    Plots the position of a node at a given time
-    Args:
-        _time: the time at which the position is to be plotted
-    Returns:
-        None
-    '''
-    df_temp = pd.DataFrame(columns=['x','y','z','node_id'])
-    for i in range(number_of_nodes):
-        x,y,z,node_id = _get_coordinates(i,time)
-        df_temp.loc[i] = [x,y,z,node_id] # type: ignore
-    fig = px.scatter_3d(df_temp,x='x',y='y',z='z',color='node_id')
-    fig.show()
-
-plot_position_at_time(1) # plot the position of the nodes at time 1     
 # %%
 def _get_coordinates(node_id:int,time:int):
     '''
@@ -168,8 +157,113 @@ def _get_coordinates(node_id:int,time:int):
     coordinates = list(df.iloc[time][['x','y','z','node_id']])
     return coordinates
 
-_get_coordinates(9,5) # get the coordinates of node 0 at time 1
-# %%
-node_positions_filtered
+#_get_coordinates(9,5) # get the coordinates of node 0 at time 1
 
+def plot_position_at_time(time:int):
+    
+    '''
+    Plots the position of a node at a given time
+    Args:
+        _time: the time at which the position is to be plotted
+    Returns:
+        None
+    '''
+    df_temp = pd.DataFrame(columns=['x','y','z','node_id'])
+    for i in range(number_of_nodes):
+        x,y,z,node_id = _get_coordinates(i,time)
+        df_temp.loc[i] = [x,y,z,node_id] # type: ignore
+    fig = px.scatter_3d(df_temp,x='x',y='y',z='z',color='node_id')
+    fig.show()
+
+#plot_position_at_time(1) # plot the position of the nodes at time 1     
+# %%
+def build_loc_set():
+    '''
+    Builds the locality set for each node as a dictionary
+    Args:
+        None
+    Returns:
+        loc: the locality set for each node
+    '''
+    loc:dict = {}
+    for node_id in range(number_of_nodes):
+        df = node_positions_filtered.loc[node_positions_filtered['node_id'] == node_id]
+        loc[node_id] = df['pos_prob'].values.tolist()
+    return loc
+
+loc = build_loc_set()
+
+# %%
+def get_connection():
+    for node_id in range(number_of_nodes):
+        df = node_positions_filtered.loc[node_positions_filtered['node_id'] == node_id]
+
+        for x,y,z in zip(df['x'],df['y'],df['z']): # type: ignore
+            pass
+
+get_connection()
+
+# %%
+# get the distance between the first and last coordinates of each node
+'''
+
+def get_max_distance():
+    max_distance = 0
+    for node_id in range(number_of_nodes):
+        df = node_positions_filtered.loc[node_positions_filtered['node_id'] == node_id]
+        coordinate_1 = df.iloc[0][['x','y','z']].values.tolist() # coordinates of the first position
+        coordinate_2 = df.iloc[-1][['x','y','z']].values.tolist() # coordinates of the last position
+        distance = get_distance(coordinate_1,coordinate_2)
+        if distance > max_distance:
+            print(node_id)
+            max_distance = distance
+    return round(max_distance,0)
+
+
+get_max_distance()
+'''
+
+
+# %%
+def get_max_distance():
+    max_distance = 0
+    for node_id in range(number_of_nodes-1):
+        df = node_positions_filtered.loc[node_positions_filtered['node_id'] == node_id]
+        coordinate_1 = df.iloc[0][['x','y','z']].values.tolist() # coordinates of node i
+        df = node_positions_filtered.loc[node_positions_filtered['node_id'] == node_id+1]
+        coordinate_2 = df.iloc[0][['x','y','z']].values.tolist() # coordinates of node i+1
+        distance = get_distance(coordinate_1,coordinate_2)
+        if distance > max_distance:
+            print(node_id)
+            max_distance = distance
+    return round(max_distance,0)
+
+get_max_distance()
+# %%
+def get_min_distance():
+    min_distance = inf
+    for node_id in range(number_of_nodes-1):
+        df = node_positions_filtered.loc[node_positions_filtered['node_id'] == node_id]
+        coordinate_1 = df.iloc[0][['x','y','z']].values.tolist()
+        df = node_positions_filtered.loc[node_positions_filtered['node_id'] == node_id+1]
+        coordinate_2 = df.iloc[0][['x','y','z']].values.tolist()
+        distance = get_distance(coordinate_1,coordinate_2)
+        if distance < min_distance:
+            print(node_id)
+            min_distance = distance
+    return round(min_distance,0)
+
+get_min_distance()
+# %%
+def get_avg_distance():
+    avg_distance = 0
+    for node_id in range(number_of_nodes-1):
+        df = node_positions_filtered.loc[node_positions_filtered['node_id'] == node_id]
+        coordinate_1 = df.iloc[0][['x','y','z']].values.tolist()
+        df = node_positions_filtered.loc[node_positions_filtered['node_id'] == node_id+1]
+        coordinate_2 = df.iloc[0][['x','y','z']].values.tolist()
+        distance = get_distance(coordinate_1,coordinate_2)
+        avg_distance += distance
+    return round(avg_distance/number_of_nodes,0)
+get_avg_distance()
 # %%
