@@ -4,6 +4,8 @@ import random as rand
 import plotly.express as px
 import pandas as pd
 
+
+
 # %% generate random positions for the nodes
 def _generate_random_positions():
     '''
@@ -92,21 +94,22 @@ def __get_locations(node_id:int,node_pos:tuple):
 
 
 # %% get the locations of the nodes
-def get_node_locations():
+def simulate():
     for pos in node_initial_positions:
         node_id = node_initial_positions.index(pos)
         __get_locations(node_id,pos)
 
-get_node_locations()
+simulate()
 # %%
 node_positions_filtered = pd.DataFrame(columns=['x','y','z','node_id','pos_prob'])
-def build_locality_set(dis_threshold:float = 0.83):
+def build_location_probs(dis_threshold:float = 0.83):
     '''
-    Plots the positions of the nodes
+    Builds the location probabilities for the nodes
     Args:
-        dis_threshold: the distance threshold between two nodes
+        dis_threshold: the distance threshold between two positions to be considered as the same node
     Returns:
         None
+
     '''
     counter = 0
     for node_id in range(number_of_nodes):
@@ -139,7 +142,7 @@ def build_locality_set(dis_threshold:float = 0.83):
     #fig.show()
 
 
-build_locality_set(1.4) # build the locality set with a distance threshold of 1
+build_location_probs(1.4) # build the locality set with a distance threshold of 1
 
 # %%
 def _get_coordinates(node_id:int,time:int):
@@ -177,7 +180,7 @@ def plot_position_at_time(time:int):
 
 #plot_position_at_time(1) # plot the position of the nodes at time 1     
 # %%
-def build_loc_set():
+def build_loc():
     '''
     Builds the locality set for each node as a dictionary
     Args:
@@ -191,27 +194,7 @@ def build_loc_set():
         loc[node_id] = df['pos_prob'].values.tolist()
     return loc
 
-loc = build_loc_set()
-
-# %%
-# get the distance between the first and last coordinates of each node
-'''
-
-def get_max_distance():
-    max_distance = 0
-    for node_id in range(number_of_nodes):
-        df = node_positions_filtered.loc[node_positions_filtered['node_id'] == node_id]
-        coordinate_1 = df.iloc[0][['x','y','z']].values.tolist() # coordinates of the first position
-        coordinate_2 = df.iloc[-1][['x','y','z']].values.tolist() # coordinates of the last position
-        distance = get_distance(coordinate_1,coordinate_2)
-        if distance > max_distance:
-            print(node_id)
-            max_distance = distance
-    return round(max_distance,0)
-
-
-get_max_distance()
-'''
+loc = build_loc()
 
 
 # %%
@@ -257,6 +240,20 @@ def get_avg_distance():
     return round(avg_distance/number_of_nodes,0)
 get_avg_distance()
 # %%
+def get_standard_deviation_distance():
+    avg_distance = get_avg_distance()
+    std_distance = 0
+    for node_id in range(number_of_nodes-1):
+        df = node_positions_filtered.loc[node_positions_filtered['node_id'] == node_id]
+        coordinate_1 = df.iloc[0][['x','y','z']].values.tolist()
+        df = node_positions_filtered.loc[node_positions_filtered['node_id'] == node_id+1]
+        coordinate_2 = df.iloc[0][['x','y','z']].values.tolist()
+        distance = get_distance(coordinate_1,coordinate_2)
+        std_distance += (distance-avg_distance)**2
+    return round(sqrt(std_distance/number_of_nodes),0) 
+
+get_standard_deviation_distance()
+# %%
 def build_underlying_graph(dis_threshold:int=400):
     '''
     Builds the connection between nodes based on the distance threshold
@@ -279,10 +276,46 @@ def build_underlying_graph(dis_threshold:int=400):
         conn_list[node_id] = neighbor_list
     return conn_list
 
-build_underlying_graph(800)
+build_underlying_graph(1000)
 # %%
-num = 0
-for i in range(10):
-    num += 10-i
-print(num)
+def build_loc_links():
+    underlying_graph = build_underlying_graph(1000)
+    keys = list(underlying_graph.keys())
+    loc_links = {}
+    for key in keys:
+        df = node_positions_filtered.loc[node_positions_filtered['node_id'] == key] # get the position of node i
+        for neighbor in underlying_graph[key]:
+            df2 = node_positions_filtered.loc[node_positions_filtered['node_id'] == neighbor] # get the position of neighbor node to node i
+            a,b = _build_connection(df,df2,610)
+            print(a)
+            print(b)
+            loc_links[a] = b
+    return loc_links
+             
+    
+build_loc_links()        
 # %%
+def _build_connection(node_1:pd.DataFrame,node_2:pd.DataFrame, dis_threshold:int=400):
+    node_id_1 = node_1.iloc[0]['node_id']
+    node_id_2 = node_2.iloc[0]['node_id']
+    conn_dict = {}
+    for i in range(len(node_1)):
+        coordinate_1 = node_1.iloc[i][['x','y','z']].values.tolist()
+        conn_list = []
+        for j in range(len(node_2)):
+            coordinate_2 = node_2.iloc[j][['x','y','z']].values.tolist()
+            if is_reachable(coordinate_1,coordinate_2,dis_threshold):
+                conn_list.append(1) # 1 means connected
+            else:
+                conn_list.append(0) # 0 means not connected
+        conn_dict[i] = conn_list
+    return (node_id_1, node_id_2),conn_dict
+
+
+
+# %%
+from math import sin, cos, exp, pi, inf
+import random as rand
+import plotly.express as px
+import pandas as pd
+
