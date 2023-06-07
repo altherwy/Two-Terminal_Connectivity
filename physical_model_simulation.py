@@ -104,7 +104,7 @@ class PhysicalModel:
         distance = ((x2 - x1)**2 + (y2 - y1)**2 + (z2 - z1)**2)**0.5
         return distance
     
-    def build_location_probs(self, dis_threshold:float = 0.83):
+    def build_location_probs(self, dis_threshold:float = 0.83)->None:
         '''
         Builds the location probabilities for the nodes
         Args:
@@ -167,7 +167,7 @@ class PhysicalModel:
         fig = px.scatter_3d(df_temp,x='x',y='y',z='z',color='node_id')
         fig.show()
     
-    def build_loc(self):
+    def build_loc(self) -> dict[str, list[float]]:
         '''
         Builds the locality set for each node as a dictionary
         Args:
@@ -215,7 +215,7 @@ class PhysicalModel:
             coordinate_2 = df.iloc[0][['x','y','z']].values.tolist()
             distance = self._get_distance(coordinate_1,coordinate_2)
             if distance < min_distance:
-                print(node_id)
+                
                 min_distance = distance
         return round(min_distance,0)
     
@@ -256,7 +256,7 @@ class PhysicalModel:
             std_distance += (distance-avg_distance)**2
         return round(sqrt(std_distance/self.number_of_nodes),0) 
 
-    def build_underlying_graph(self,dis_threshold):
+    def build_underlying_graph(self,dis_threshold = None)->dict[str, list[str]]:
         '''
         Builds the connection between nodes based on the distance threshold
         Args:
@@ -265,6 +265,8 @@ class PhysicalModel:
             None
         '''
         conn_list = {}
+        if dis_threshold == None:
+            dis_threshold = self.get_avg_distance()
         for node_id in range(self.number_of_nodes-1):
             neighbor_list = [] # the list of neighbors of node i
             df = self.node_positions_filtered.loc[self.node_positions_filtered['node_id'] == node_id]
@@ -297,8 +299,6 @@ class PhysicalModel:
             for neighbor in underlying_graph[key]:
                 df2 = self.node_positions_filtered.loc[self.node_positions_filtered['node_id'] == neighbor] # get the position of neighbor node to node i
                 a,b = self._build_connection(df,df2,610)
-                print(a)
-                print(b)
                 loc_links[a] = b
         return loc_links
     
@@ -320,3 +320,19 @@ class PhysicalModel:
                     conn_list.append(0) # 0 means not connected
             conn_dict[i] = conn_list
         return (node_id_1, node_id_2),conn_dict
+    
+
+
+    def main(self):
+        self.simulate()
+        self.build_location_probs(dis_threshold=0.83) # get the proabalities of being at each location for each node
+        loc = self.build_loc()
+        links = self.build_underlying_graph(dis_threshold=None)
+        loc_links = self.build_loc_links(dis_threshold=None)
+        print(loc)
+        #print(links)
+        #print(loc_links)
+
+if __name__ == '__main__':
+    sim = PhysicalModel()
+    sim.main()
