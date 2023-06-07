@@ -16,10 +16,10 @@ class PhysicalModel:
         self.lambda_ = 1
         self.v = 0.3
         self.Vs = 0.5
-        self.C = 100
-        self.Ac = 1
-        self.alph = 1
-        self.K = 100
+        self.C = 10
+        self.Ac = 10
+        self.alph = 10
+        self.K = 10
         self.m = 1
         self.Ar = 1
         self.P0 = 1025
@@ -104,7 +104,24 @@ class PhysicalModel:
         distance = ((x2 - x1)**2 + (y2 - y1)**2 + (z2 - z1)**2)**0.5
         return distance
     
-    def build_location_probs(self, dis_threshold:float = 0.83)->None:
+    def _get_dis_threshold(self):
+        '''
+        Calculates the average distance between consecutive positions for each node in the simulation
+        Args:
+            sim: an instance of the PhysicalModel class
+        Returns:
+            None
+        '''
+        total_avg = 0
+        for j in range(len(self.node_positions)):
+            df = self.node_positions.iloc[j]
+            avg = 0
+            for i in range(len(df)-1):
+                avg += self._get_distance(df[i], df[i+1])
+            total_avg += avg / (len(df)-1)
+        return total_avg/len(self.node_positions)
+            
+    def build_location_probs(self, dis_threshold)->None:
         '''
         Builds the location probabilities for the nodes
         Args:
@@ -323,16 +340,20 @@ class PhysicalModel:
     
 
 
+
     def main(self):
         self.simulate()
-        self.build_location_probs(dis_threshold=0.83) # get the proabalities of being at each location for each node
+        dis_threshold = self._get_dis_threshold()
+        print(dis_threshold)
+        self.build_location_probs(dis_threshold) # get the proabalities of being at each location for each node
         loc = self.build_loc()
         links = self.build_underlying_graph(dis_threshold=None)
         loc_links = self.build_loc_links(dis_threshold=None)
         print(loc)
         #print(links)
         #print(loc_links)
+        
 
 if __name__ == '__main__':
-    sim = PhysicalModel()
+    sim = PhysicalModel(loc_set_max=5)
     sim.main()
