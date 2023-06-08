@@ -1,7 +1,9 @@
 from math import sin, cos,exp, pi, inf, sqrt
+from jaal import Jaal
 import random as rand
 import plotly.express as px
 import pandas as pd
+
 
 class PhysicalModel:
     '''
@@ -252,7 +254,7 @@ class PhysicalModel:
             coordinate_2 = df.iloc[0][['x','y','z']].values.tolist()
             distance = self._get_distance(coordinate_1,coordinate_2)
             avg_distance += distance
-        return round(avg_distance/self.number_of_nodes,0)
+        return round(avg_distance/(self.number_of_nodes-1),0)
     
     def get_standard_deviation_distance(self):
         '''
@@ -271,7 +273,7 @@ class PhysicalModel:
             coordinate_2 = df.iloc[0][['x','y','z']].values.tolist()
             distance = self._get_distance(coordinate_1,coordinate_2)
             std_distance += (distance-avg_distance)**2
-        return round(sqrt(std_distance/self.number_of_nodes),0) 
+        return round(sqrt(std_distance/(self.number_of_nodes-1)),0) 
 
     def build_underlying_graph(self,dis_threshold = None)->dict[str, list[str]]:
         '''
@@ -283,7 +285,7 @@ class PhysicalModel:
         '''
         conn_list = {}
         if dis_threshold == None:
-            dis_threshold = self.get_avg_distance()
+            dis_threshold = self.get_avg_distance() + self.get_standard_deviation_distance()
         for node_id in range(self.number_of_nodes-1):
             neighbor_list = [] # the list of neighbors of node i
             df = self.node_positions_filtered.loc[self.node_positions_filtered['node_id'] == node_id]
@@ -297,7 +299,7 @@ class PhysicalModel:
             conn_list[node_id] = neighbor_list
         return conn_list
     
-    def build_loc_links(self, dis_threshold=None):
+    def build_loc_links(self,underlying_graph):
         '''
         Builds the connection between nodes based on the distance threshold
         Args:
@@ -305,10 +307,6 @@ class PhysicalModel:
         Returns:
             None
         '''
-        if dis_threshold == None:
-            dis_threshold = self.get_avg_distance()
-
-        underlying_graph = self.build_underlying_graph(dis_threshold)
         keys = list(underlying_graph.keys())
         loc_links = {}
         for key in keys:
@@ -338,20 +336,42 @@ class PhysicalModel:
             conn_dict[i] = conn_list
         return (node_id_1, node_id_2),conn_dict
     
+    def plot_underlying_graph(self,links):
+        '''
+        Plots the JAAL graph
+        Args:
+            links: the links between nodes
+        Returns:
+            None
+        '''
+        from_list = []
+        to_list = []
+        for key in links.keys():
+            for to in links[key]:
+                from_list.append(key)
+                to_list.append(to)
 
+        df_node = pd.DataFrame({'id':[i for i in range(self.number_of_nodes)]})
+        df_edge = pd.DataFrame({'from':from_list,'to':to_list})
+        Jaal(df_edge,df_node).plot()
 
 
     def main(self):
         self.simulate()
         dis_threshold = self._get_dis_threshold()
-        print(dis_threshold)
         self.build_location_probs(dis_threshold) # get the proabalities of being at each location for each node
         loc = self.build_loc()
-        links = self.build_underlying_graph(dis_threshold=None)
-        loc_links = self.build_loc_links(dis_threshold=None)
+        links = self.build_underlying_graph()
+        loc_links = self.build_loc_links(links)
+        self.plot_underlying_graph(links)
+        '''
         print(loc)
-        #print(links)
-        #print(loc_links)
+        print('------------------')
+        print(links)
+        print('------------------')
+        print(loc_links)
+        '''
+        return loc,links,loc_links
         
 
 if __name__ == '__main__':
