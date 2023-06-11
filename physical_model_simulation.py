@@ -297,6 +297,7 @@ class PhysicalModel:
                 if distance < dis_threshold:
                     neighbor_list.append(node_id_2)
             conn_list[node_id] = neighbor_list
+            
         return conn_list
     
     def build_loc_links(self,underlying_graph):
@@ -313,7 +314,7 @@ class PhysicalModel:
             df = self.node_positions_filtered.loc[self.node_positions_filtered['node_id'] == key] # get the position of node i
             for neighbor in underlying_graph[key]:
                 df2 = self.node_positions_filtered.loc[self.node_positions_filtered['node_id'] == neighbor] # get the position of neighbor node to node i
-                a,b = self._build_connection(df,df2,610)
+                a,b = self._build_connection(df,df2)
                 loc_links[a] = b
         return loc_links
     
@@ -322,7 +323,7 @@ class PhysicalModel:
         node_id_2 = node_2.iloc[0]['node_id']
         conn_dict = {}
         if dis_threshold == None:
-            dis_threshold = self.get_avg_distance()
+            dis_threshold = self.get_avg_distance() + self.get_standard_deviation_distance()
 
         for i in range(len(node_1)):
             coordinate_1 = node_1.iloc[i][['x','y','z']].values.tolist()
@@ -354,7 +355,48 @@ class PhysicalModel:
         df_node = pd.DataFrame({'id':[i for i in range(self.number_of_nodes)]})
         df_edge = pd.DataFrame({'from':from_list,'to':to_list})
         Jaal(df_edge,df_node).plot()
+    
+    def name_nodes(self, loc, links, loc_links):
+        '''
+        Changes the node_id of nodes to alphabetic characters
+        Args:
+            loc: the location of nodes
+            links: the links between nodes
+            loc_links: the links between nodes in the same location
+        Returns:
+            loc_name: the location of nodes with alphabetic characters
+            links_name: the links between nodes with alphabetic characters
+            loc_links_name: the links between nodes in the same location with alphabetic characters
+        '''
+        
+            
+        # chane the node_id of links to alphabetic characters
+        links_name = {}
+        for key in links.keys():
+            links_name[chr(key+65)] = [chr(i+65) for i in links[key]]
+        
+        
+        # change all the keys of loc_links to alphabetic characters
+        loc_links_name = {}
+        for key in loc_links.keys():
+            from_node = chr(int(key[0])+65)
+            to_node = chr(int(key[1])+65)
+            loc_links_name[from_node,to_node] = loc_links[key]
+        
 
+       
+        # change the node_id of loc to alphabetic characters
+        loc_name = {}
+        for key in loc.keys():
+            loc_name[chr(key+65)] = loc[key]
+        
+
+        return loc_name, links_name, loc_links_name
+    
+
+            
+
+        
 
     def main(self):
         self.simulate()
@@ -363,7 +405,14 @@ class PhysicalModel:
         loc = self.build_loc()
         links = self.build_underlying_graph()
         loc_links = self.build_loc_links(links)
-        self.plot_underlying_graph(links)
+        #self.plot_underlying_graph(links)
+        loc_name,links_name,loc_links_name = self.name_nodes(loc,links,loc_links)
+        print(loc_name)
+        print('------------------')
+        print(links_name)
+        print('------------------')
+        print(loc_links_name)
+
         '''
         print(loc)
         print('------------------')
@@ -375,5 +424,5 @@ class PhysicalModel:
         
 
 if __name__ == '__main__':
-    sim = PhysicalModel(loc_set_max=5)
+    sim = PhysicalModel(number_of_nodes=3, loc_set_max=3)
     sim.main()
