@@ -1,5 +1,7 @@
 from DisjointPaths import DisjointPaths
+import physical_model_simulation as pms
 import pandas as pd
+import argparse
 
 class TwoTerminal:
     '''
@@ -187,33 +189,62 @@ class TwoTerminal:
                 links.iat[r,c] = links_x_y[r][c]
         return links
 
-
-
+    
+    
     def main(self):
         twoT_conn = self.compute_2T_conn()
         print(twoT_conn)
 
-if __name__ == '__main__':
-    links:dict = {
-        'S':['A','E'],
-        'A':['B'],
-        'B':['C','F','T'],
-        'C':['D'],
-        'D':['T'],
-        'E':['F'],
-        'F':['T']
-    }
+
+def dummy_data():
     loc:dict = {'A':[.15,.25,.3,.3], 'B':[.4,.2,.4], 'C':[.2,.3,.4,.1], 'D':[.4,.3,.3],
-                'E':[.5,.5], 'F':[.4,.6],
-                'S':[.3,.5,.2], 'T':[.8,.2]}
+            'E':[.5,.5], 'F':[.4,.6],
+            'S':[.3,.5,.2], 'T':[.8,.2]}
+    
+    links:dict = {
+    'S':['A','E'],
+    'A':['B'],
+    'B':['C','F','T'],
+    'C':['D'],
+    'D':['T'],
+    'E':['F'],
+    'F':['T']}
+                
     loc_links = pd.DataFrame({('A','B'): {0:[1,1,1], 1:[1,1,1], 2:[1,1,1], 3:[1,1,1]},
-                                ('B','C'): {0:[1,1,1,1],1:[1,1,1,1], 2:[1,1,1,1]},
-                                ('C','D'): {0:[0,1,1], 1:[1,1,1], 2:[1,1,1], 3:[1,1,1]},
-                                ('E','F'): {0:[1,1],1:[1,1]},
-                                ('S','A'): {0:[1,1,1,1], 1:[1,1,1,1], 2:[1,1,1,1]},
-                                ('D','T'): {0:[1,1], 1:[0,1], 2:[1,1]},
-                                ('S','E'): {0:[1,1],1:[0,1],2:[0,1]},
-                                ('B','T'): {0:[1,0],1:[0,0],2:[0,0]},
-                                ('F','T'): {0:[1,0],1:[1,1]}
-                                })
+                            ('B','C'): {0:[1,1,1,1],1:[1,1,1,1], 2:[1,1,1,1]},
+                            ('C','D'): {0:[0,1,1], 1:[1,1,1], 2:[1,1,1], 3:[1,1,1]},
+                            ('E','F'): {0:[1,1],1:[1,1]},
+                            ('S','A'): {0:[1,1,1,1], 1:[1,1,1,1], 2:[1,1,1,1]},
+                            ('D','T'): {0:[1,1], 1:[0,1], 2:[1,1]},
+                            ('S','E'): {0:[1,1],1:[0,1],2:[0,1]},
+                            ('B','T'): {0:[1,0],1:[0,0],2:[0,0]},
+                            ('F','T'): {0:[1,0],1:[1,1]}})
+
+    return loc, links, loc_links
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-t","--test",action="store_true")
+    parser.add_argument("-n","--nodes")
+    parser.add_argument("-l","--locality")
+    parser.add_argument("-r","--run",action="store_true")
+    args = parser.parse_args()
+    loc = {}
+    links = {}
+    loc_links = {}
+    if args.test:
+        loc, links, loc_links = dummy_data()
+    elif args.run:
+        if args.nodes and args.locality:
+            num_nodes = int(args.nodes)
+            num_locality = int(args.locality)
+        else:
+            num_nodes = 10
+            num_locality = 4
+        loc, links, loc_links = pms.PhysicalModel(number_of_nodes=num_nodes, loc_set_max=num_locality).get_data()
+    else:
+        print('Please enter the correct arguments')
+        exit()
+
     TwoTerminal(links=links, loc=loc, loc_links=loc_links).main()
+
+    

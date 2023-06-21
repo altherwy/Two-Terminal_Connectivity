@@ -369,19 +369,33 @@ class PhysicalModel:
             loc_links_name: the links between nodes in the same location with alphabetic characters
         '''
         
+        # get the last node_id
+        first_node = chr(self.node_positions_filtered.iloc[0]['node_id'] + 65)
+        last_node = chr(self.node_positions_filtered.iloc[-1]['node_id'] + 65)
+        # change to character
+        
+
+
+
             
         # chane the node_id of links to alphabetic characters
         links_name = {}
         for key in links.keys():
             links_name[chr(key+65)] = [chr(i+65) for i in links[key]]
         
-        
+        # replace the first node and last character to S and T, respectively
+        links_name['S'] = links_name.pop('A')
+        links_name['T'] = links_name.pop(chr(self.number_of_nodes-1+65))
+
         # change all the keys of loc_links to alphabetic characters
         loc_links_name = {}
         for key in loc_links.keys():
             from_node = chr(int(key[0])+65)
             to_node = chr(int(key[1])+65)
             loc_links_name[from_node,to_node] = loc_links[key]
+        # replace the first node and last character of loc_links_name to S and T, respectively
+        loc_links_name['S'] = loc_links_name.pop(('A',chr(self.number_of_nodes-1+65)))
+        loc_links_name['T'] = loc_links_name.pop(('A',chr(self.number_of_nodes-1+65)))
         
 
        
@@ -393,34 +407,41 @@ class PhysicalModel:
 
         return loc_name, links_name, loc_links_name
     
-
+    def get_data(self):
+        '''
+        Gets the locality set of nodes, the links between the nodes, and the links between the nodes' locality set
+        Args:
+            None
+        Returns:
+            loc: the locality set of nodes
+            links: the links between the nodes
+            loc_links: the links between the nodes' locality set
+        '''
             
-
-        
-
-    def main(self):
         self.simulate()
         dis_threshold = self._get_dis_threshold()
         self.build_location_probs(dis_threshold) # get the proabalities of being at each location for each node
         loc = self.build_loc()
         links = self.build_underlying_graph()
         loc_links = self.build_loc_links(links)
-        #self.plot_underlying_graph(links)
         loc_name,links_name,loc_links_name = self.name_nodes(loc,links,loc_links)
+
+        return loc_name,links_name,loc_links_name
+
+            
+
+        
+
+    def main(self):
+        loc_name, links_name, loc_links_name = self.get_data()
+        #self.plot_underlying_graph(links)
+        
         print(loc_name)
         print('------------------')
         print(links_name)
         print('------------------')
         print(loc_links_name)
 
-        '''
-        print(loc)
-        print('------------------')
-        print(links)
-        print('------------------')
-        print(loc_links)
-        '''
-        return loc,links,loc_links
         
 
 if __name__ == '__main__':

@@ -49,7 +49,12 @@ class DisjointPaths:
         def nodeLettersToIndexes(neighbours:list) -> list:
             indexesList:list= [0]*self.numNodes # [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             for neighbour in neighbours: # ['A','B','C']
-                indexesList[indexes[neighbour]] = 1 # [0, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0]
+                try:
+                    indexesList[indexes[neighbour]] = 1 # [0, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0]
+                except:
+                    print(neighbour, neighbours)
+                    exit()
+                #indexesList[indexes[neighbour]] = 1 # [0, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0]
             return indexesList
         
         return buildGraph(),indexesValues # type: ignore
