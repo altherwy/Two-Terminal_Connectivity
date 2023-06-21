@@ -370,8 +370,8 @@ class PhysicalModel:
         '''
         
         # get the last node_id
-        first_node = chr(self.node_positions_filtered.iloc[0]['node_id'] + 65)
-        last_node = chr(self.node_positions_filtered.iloc[-1]['node_id'] + 65)
+        #first_node = chr(self.node_positions_filtered.iloc[0]['node_id'] + 65)
+        #last_node = chr(self.node_positions_filtered.iloc[-1]['node_id'] + 65)
         # change to character
         
 
@@ -380,30 +380,60 @@ class PhysicalModel:
             
         # chane the node_id of links to alphabetic characters
         links_name = {}
+        #for key in links.keys():
+            # links_name[chr(key+65)] = [chr(i+65) for i in links[key]]
+        links_name = {}
         for key in links.keys():
-            links_name[chr(key+65)] = [chr(i+65) for i in links[key]]
-        
+            if key == 0:
+                temp_list = []
+                for i in links[key]:
+                    temp_list.append(str(i)) if i != self.number_of_nodes - 1 else temp_list.append('T')
+                links_name['S'] = temp_list
+
+            #elif key == self.number_of_nodes - 1:
+            #    links_name['T'] = [str(i) for i in links[key]]
+            else:
+                temp_list = []
+                for i in links[key]:
+                    temp_list.append(str(i)) if i != self.number_of_nodes - 1 else temp_list.append('T')
+                links_name[str(key)] = temp_list
+    
         # replace the first node and last character to S and T, respectively
-        links_name['S'] = links_name.pop('A')
-        links_name['T'] = links_name.pop(chr(self.number_of_nodes-1+65))
+        #links_name['S'] = links_name.pop('A')
+        #links_name['T'] = links_name.pop(chr(self.number_of_nodes-1+65))
 
         # change all the keys of loc_links to alphabetic characters
         loc_links_name = {}
+        
+        
         for key in loc_links.keys():
-            from_node = chr(int(key[0])+65)
-            to_node = chr(int(key[1])+65)
+            #from_node = chr(int(key[0])+65)
+            if key[0] == 0:
+                from_node = 'S'
+            else:
+                from_node = str(int(key[0]))
+            #to_node = chr(int(key[1])+65)
+            if key[1] == self.number_of_nodes - 1:
+                to_node = 'T'
+            else:
+                to_node = str(int(key[1]))
+                
             loc_links_name[from_node,to_node] = loc_links[key]
         # replace the first node and last character of loc_links_name to S and T, respectively
-        loc_links_name['S'] = loc_links_name.pop(('A',chr(self.number_of_nodes-1+65)))
-        loc_links_name['T'] = loc_links_name.pop(('A',chr(self.number_of_nodes-1+65)))
+        #loc_links_name['S'] = loc_links_name.pop(('A',chr(self.number_of_nodes-1+65)))
+        #loc_links_name['T'] = loc_links_name.pop(('A',chr(self.number_of_nodes-1+65)))
         
 
        
         # change the node_id of loc to alphabetic characters
         loc_name = {}
         for key in loc.keys():
-            loc_name[chr(key+65)] = loc[key]
-        
+            if key == 0:
+                loc_name['S'] = loc[key]
+            elif key == self.number_of_nodes - 1:
+                loc_name['T'] = loc[key]
+            else:
+                loc_name[str(key)] = loc[key]
 
         return loc_name, links_name, loc_links_name
     
@@ -445,5 +475,5 @@ class PhysicalModel:
         
 
 if __name__ == '__main__':
-    sim = PhysicalModel(number_of_nodes=3, loc_set_max=3)
+    sim = PhysicalModel(number_of_nodes=4, loc_set_max=3)
     sim.main()
