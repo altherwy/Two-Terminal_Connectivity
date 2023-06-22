@@ -36,11 +36,13 @@ class PhysicalModel:
 
         self.node_positions = pd.DataFrame(index=range(number_of_nodes) ,columns=range(loc_set_max)) # dataframe to store the locations of the nodes at different times
         self.node_initial_positions = list(self._generate_random_positions()) # generate random positions for the nodes
+        self._reorder_node_positions() # reorder the nodes so that the two furtherest nodes are at the first and last positions of the node_initial_positions list
         self.node_positions_filtered = pd.DataFrame(columns=['x','y','z','node_id','pos_prob'])
 
     def _generate_random_positions(self, xspan=[-1*10**3, 1*10**3], yspan=[-0.5*10**3, 0.5*10**3], zspan=[-500, -100], ps_span=[1025, 1045]):
         '''
         Generates random positions for the nodes
+
         '''
         counter = 0
         while counter < self.number_of_nodes:
@@ -50,6 +52,32 @@ class PhysicalModel:
             ps = rand.randint(ps_span[0],ps_span[1]) # density of the sensor
             counter += 1
             yield (x,y,z,ps)   
+
+    def _reorder_node_positions(self):
+        '''
+        Place the two furtherest nodes from each other at the first and last positions of the node_initial_positions list
+        '''
+        max_distance = 0
+        fst_node_id = 0
+        lst_node_id = 0
+        for i in range(len(self.node_initial_positions)-1):
+            for j in range(i+1,len(self.node_initial_positions)):
+
+                coordinate_1 = self.node_initial_positions[i][0:3]
+                coordinate_2 = self.node_initial_positions[j][0:3]
+                distance = self._get_distance(coordinate_1, coordinate_2)
+                if distance > max_distance:
+                    max_distance = distance
+                    fst_node_id = i
+                    lst_node_id = j
+
+        
+        fst_node = self.node_initial_positions.pop(fst_node_id)
+        self.node_initial_positions.insert(0,fst_node)
+        lst_node = self.node_initial_positions.pop(lst_node_id)
+        self.node_initial_positions.append(lst_node)
+
+
 
     def simulate(self):
         for pos in self.node_initial_positions:
@@ -110,7 +138,7 @@ class PhysicalModel:
         '''
         Calculates the average distance between consecutive positions for each node in the simulation
         Args:
-            sim: an instance of the PhysicalModel class
+            None
         Returns:
             None
         '''
@@ -118,8 +146,11 @@ class PhysicalModel:
         for j in range(len(self.node_positions)):
             df = self.node_positions.iloc[j]
             avg = 0
-            for i in range(len(df)-1):
+            for i in range(len(df)-1):      
                 avg += self._get_distance(df[i], df[i+1])
+                
+                
+            
             total_avg += avg / (len(df)-1)
         return total_avg/len(self.node_positions)
             
@@ -201,13 +232,15 @@ class PhysicalModel:
         return loc
     def get_max_distance(self):
         '''
-        Returns the maximum distance between any two nodes
+        Returns the maximum distance between any two nodes and the corresponding nodes
         Args:
             None
         Returns:
             max_distance: the maximum distance between any two nodes
         '''
         max_distance = 0
+        fst_node_id = 0
+        snd_node_id = 0
         for node_id in range(self.number_of_nodes-1):
             df = self.node_positions_filtered.loc[self.node_positions_filtered['node_id'] == node_id]
             coordinate_1 = df.iloc[0][['x','y','z']].values.tolist() # coordinates of node i
@@ -216,7 +249,9 @@ class PhysicalModel:
             distance = self._get_distance(coordinate_1,coordinate_2)
             if distance > max_distance:
                 max_distance = distance
-        return round(max_distance,0)
+                fst_node_id = node_id
+                snd_node_id = node_id+1
+        return round(max_distance,0),fst_node_id,snd_node_id
     
     def get_min_distance(self):
         '''
@@ -373,8 +408,6 @@ class PhysicalModel:
         #first_node = chr(self.node_positions_filtered.iloc[0]['node_id'] + 65)
         #last_node = chr(self.node_positions_filtered.iloc[-1]['node_id'] + 65)
         # change to character
-        
-
 
 
             
@@ -417,7 +450,7 @@ class PhysicalModel:
                 to_node = 'T'
             else:
                 to_node = str(int(key[1]))
-                
+
             loc_links_name[from_node,to_node] = loc_links[key]
         # replace the first node and last character of loc_links_name to S and T, respectively
         #loc_links_name['S'] = loc_links_name.pop(('A',chr(self.number_of_nodes-1+65)))
@@ -434,8 +467,8 @@ class PhysicalModel:
                 loc_name['T'] = loc[key]
             else:
                 loc_name[str(key)] = loc[key]
-
-        return loc_name, links_name, loc_links_name
+        df_loc_links = pd.DataFrame.from_dict(loc_links_name)
+        return loc_name, links_name, df_loc_links
     
     def get_data(self):
         '''
@@ -466,14 +499,14 @@ class PhysicalModel:
         loc_name, links_name, loc_links_name = self.get_data()
         #self.plot_underlying_graph(links)
         
-        print(loc_name)
-        print('------------------')
+        #print(loc_name)
+        #print('------------------')
         print(links_name)
         print('------------------')
-        print(loc_links_name)
+        #print(loc_links_name)
 
         
 
 if __name__ == '__main__':
-    sim = PhysicalModel(number_of_nodes=4, loc_set_max=3)
+    sim = PhysicalModel(number_of_nodes=10, loc_set_max=3)
     sim.main()

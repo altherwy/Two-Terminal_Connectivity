@@ -19,6 +19,7 @@ class TwoTerminal:
         if dps is None:
             dis_paths = DisjointPaths(links)# type: ignore
             paths = dis_paths.runMaxFlow() if self.algorithm == 'MaxFlow' else dis_paths.runSSSP() 
+            print(paths)
             self.dps = [path[1:-1] for path in paths] # the disjoint paths without terminals (i.e., without S and T)
         else:
             self.dps = dps # the disjoint paths 
@@ -40,33 +41,38 @@ class TwoTerminal:
         first_rows_num:int = 0
         x = pd.DataFrame()
         z = pd.DataFrame()
-        for dp in self.dps: 
-            for i in range(len(dp) - 1):
-                node:str = dp[i] # the current node i.e., 'A'
-                if i == 0: # the first node in the disjoint-path
-                    x = self.loc[node] # the locality set of the first node (e.g., [.4,.6])
-                    first_rows_num = len(x) # the rows number of the first node in the disjoint-path
-                next_node:str = dp[i+1]
-                y:list = self.loc[next_node]
+        for dp in self.dps:
+            if len(dp) == 1: # the disjoint-path has only one node
+                z =  pd.DataFrame({0:self.loc[dp[0]]})
+            else:
+                for i in range(len(dp) - 1):
+                    node:str = dp[i] # the current node i.e., 'A'
+                    if i == 0: # the first node in the disjoint-path
+                        x = self.loc[node] # the locality set of the first node (e.g., [.4,.6])
+                        first_rows_num = len(x) # the rows number of the first node in the disjoint-path
+                    next_node:str = dp[i+1]
+                    y:list = self.loc[next_node]
 
-                rows_num = len(self.loc[node])
-                columns_num = len(y)
+                    rows_num = len(self.loc[node])
+                    columns_num = len(y)
 
-                z = pd.DataFrame(0.0, index=range(first_rows_num), columns= range(columns_num)) # |Loc_x| * |Loc_y| 
-                links:pd.DataFrame = self.get_links(node,next_node)
-                for k in range(rows_num):
-                    for l in range(columns_num):
-                        if links.iat[k,l] == 1: # there is an edge
-                            
-                            if i == 0: # the first two nodes in a disjoint-path
-                                z.iat[k,l] = z.iat[k,l] +  x[k]*y[l]
-                            else:
+                    z = pd.DataFrame(0.0, index=range(first_rows_num), columns= range(columns_num)) # |Loc_x| * |Loc_y| 
+                    links:pd.DataFrame = self.get_links(node,next_node)
+                    
+                    for k in range(rows_num):
+                        for l in range(columns_num):
+                            if links.iat[k,l] == 1: # there is an edge
                                 
-                                column_vals = x.iloc[:,k]
-                                indices = range(len(column_vals)) # indices length for node i in [i,j] 
-                                for val, index in zip(column_vals,indices):# type: ignore
-                                    z.iat[index,l] += val * y[l]
-                x = z
+                                if i == 0: # the first two nodes in a disjoint-path
+                                    z.iat[k,l] = z.iat[k,l] +  x[k]*y[l]
+                                else:
+                                    
+                                    column_vals = x.iloc[:,k]
+                                    indices = range(len(column_vals)) # indices length for node i in [i,j] 
+                                    for val, index in zip(column_vals,indices):# type: ignore
+                                        z.iat[index,l] += val * y[l]
+                                        
+                    x = z
             T_prob_tables[tuple(dp)]= z
             
 
@@ -200,6 +206,7 @@ def dummy_data():
     loc:dict = {'A':[.15,.25,.3,.3], 'B':[.4,.2,.4], 'C':[.2,.3,.4,.1], 'D':[.4,.3,.3],
             'E':[.5,.5], 'F':[.4,.6],
             'S':[.3,.5,.2], 'T':[.8,.2]}
+    loc = {'S': [.25, .25, .5], 'A': [.25, .25, .5], 'B': [.25, .25, .5], 'T': [.25, .25, .5]}
     
     links:dict = {
     'S':['A','E'],
@@ -209,6 +216,8 @@ def dummy_data():
     'D':['T'],
     'E':['F'],
     'F':['T']}
+
+    links = {'S': ['A', 'B', 'T'], 'A': ['B'], 'B': ['T']}
                 
     loc_links = pd.DataFrame({('A','B'): {0:[1,1,1], 1:[1,1,1], 2:[1,1,1], 3:[1,1,1]},
                             ('B','C'): {0:[1,1,1,1],1:[1,1,1,1], 2:[1,1,1,1]},
@@ -219,6 +228,13 @@ def dummy_data():
                             ('S','E'): {0:[1,1],1:[0,1],2:[0,1]},
                             ('B','T'): {0:[1,0],1:[0,0],2:[0,0]},
                             ('F','T'): {0:[1,0],1:[1,1]}})
+    
+    loc_links = pd.DataFrame({('S','A'): {0:[1,1,1], 1:[1,1,1], 2:[1,1,1]},
+                            ('S','B'): {0:[1,1,1], 1:[1,1,1], 2:[1,1,1]},
+                            ('S','T'): {0:[1,1,1], 1:[1,1,1], 2:[1,1,1]},
+                            ('A','B'): {0:[1,1,1], 1:[1,1,1], 2:[1,1,1]},
+                            ('B','T'): {0:[1,1,1], 1:[1,1,1], 2:[1,1,1]}})
+    
 
     return loc, links, loc_links
 if __name__ == '__main__':
@@ -226,6 +242,7 @@ if __name__ == '__main__':
     parser.add_argument("-t","--test",action="store_true")
     parser.add_argument("-n","--nodes")
     parser.add_argument("-l","--locality")
+    parser.add_argument("-p","--plot",action="store_true")
     parser.add_argument("-r","--run",action="store_true")
     args = parser.parse_args()
     loc = {}
@@ -240,7 +257,12 @@ if __name__ == '__main__':
         else:
             num_nodes = 10
             num_locality = 4
-        loc, links, loc_links = pms.PhysicalModel(number_of_nodes=num_nodes, loc_set_max=num_locality).get_data()
+        
+        phys_model = pms.PhysicalModel(number_of_nodes=num_nodes, loc_set_max=num_locality)
+        loc, links, loc_links  = phys_model.get_data()
+        if args.plot:
+            phys_model.plot_underlying_graph(links)
+        print('loc: ', loc)
     else:
         print('Please enter the correct arguments')
         exit()

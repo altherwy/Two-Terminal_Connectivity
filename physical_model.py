@@ -83,3 +83,20 @@ loc
 loc_links
 
 # %%
+coordinate_1 = (890, -202, -255)
+coordinate_2 = (-19, -296, -257)
+x1, y1, z1 = coordinate_1
+x2, y2, z2 = coordinate_2
+distance = ((x2 - x1)**2 + (y2 - y1)**2 + (z2 - z1)**2)**0.5
+print(distance)
+# %%
+import physical_model_simulation as pms
+phys_model = pms.PhysicalModel(number_of_nodes=10, loc_set_max=5)
+loc, links, loc_links  = phys_model.get_data()
+print(loc)
+print(links)
+print(loc_links)
+import TwoTerminalConn as ttc
+ttc.TwoTerminal(links=links, loc=loc, loc_links=loc_links).main()
+# %%
+
