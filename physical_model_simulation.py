@@ -178,7 +178,9 @@ class PhysicalModel:
                     coordinate_2 = [x_pos,y_pos,z_pos]
                     add_flag = not self.is_reachable(coordinate_1,coordinate_2,dis_threshold)
 
-                if add_flag:        
+                # if the node is reachable and the random number is not equal to the counter (for inactivity purposes)
+                # we can safely delete the last part of the condition to discard inactivity
+                if add_flag and rand.randint(0,self.loc_set_max) != counter: 
                     self.node_positions_filtered.loc[counter] = [x_pos,y_pos,z_pos,node_id,pos_prob] # type: ignore
                     counter += 1
                     temp_counter += 1 
