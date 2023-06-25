@@ -1,3 +1,4 @@
+import argparse
 import pandas as pd
 class ExhaustiveAlgorithm:
     '''
@@ -8,7 +9,7 @@ class ExhaustiveAlgorithm:
         self.nodes = nodes  # the nodes in the graph
         self.loc_links = loc_links  # the links between nodes. For example, for nodes x and y, the format is as follows
         # {x_0:[y_0,y_1, ..., y_n], x_1:[y_0,y_1,..., y_n], ... , x_n:[y_0,y_1, ..., y_n]}
-        self.columns = nodes + ['Probability'];
+        self.columns = nodes + ['Probability']
         self.prob = pd.DataFrame({}, columns=self.columns)
         self.conn_prob = pd.DataFrame({}, columns=self.columns)   
 
@@ -69,9 +70,7 @@ class ExhaustiveAlgorithm:
                 return path
         path[node] = -1
         return path
-    
-
-
+   
     def main(self):
         tot_conn = 0
         node_loc: list = self.loc['S']
@@ -82,22 +81,46 @@ class ExhaustiveAlgorithm:
         # the total connectivity of the graph
         tot_conn = round(sum(self.prob.loc[self.prob['T'] != -1]['Probability']), 7)
         print(tot_conn)
+    
+
+ 
+def dummy_data():
+    '''
+    This method creates a dummy data set for testing purposes.
+    Args:
+        None
+    Returns:
+        nodes (list): The nodes in the graph
+        loc (dict): The locality sets of all nodes
+        loc_links (pd.DataFrame): The links between nodes
+    '''
+    nodes = ['S', 'A', 'B', 'C', 'D', 'E', 'F', 'T']
+    loc: dict = {'A': [.15, .25, .3, .3], 'B': [.4, .2, .4], 'C': [.2, .3, .4, .1], 'D': [.4, .3, .3],
+                    'E': [.5, .5], 'F': [.4, .6],
+                    'S': [.3, .5, .2], 'T': [.8, .2]}
+    loc_links = pd.DataFrame({('A', 'B'): {0: [1, 1, 1], 1: [1, 1, 1], 2: [1, 1, 1], 3: [1, 1, 1]},
+                                ('B', 'C'): {0: [1, 1, 1, 1], 1: [1, 1, 1, 1], 2: [1, 1, 1, 1]},
+                                ('C', 'D'): {0: [0, 1, 1], 1: [1, 1, 1], 2: [1, 1, 1], 3: [1, 1, 1]},
+                                ('E', 'F'): {0: [1, 1], 1: [1, 1]},
+                                ('S', 'A'): {0: [1, 1, 1, 1], 1: [1, 1, 1, 1], 2: [1, 1, 1, 1]},
+                                ('D', 'T'): {0: [1, 1], 1: [0, 1], 2: [1, 1]},
+                                ('S', 'E'): {0: [1, 1], 1: [0, 1], 2: [0, 1]},
+                                ('B', 'T'): {0: [1, 0], 1: [0, 0], 2: [0, 0]},
+                                ('F', 'T'): {0: [1, 0], 1: [1, 1]}
+                                })
+    return nodes, loc, loc_links
+
+
         
 
 if __name__ == '__main__':
-    nodes = ['S', 'A', 'B', 'C', 'D', 'E', 'F', 'T']
-    loc: dict = {'A': [.15, .25, .3, .3], 'B': [.4, .2, .4], 'C': [.2, .3, .4, .1], 'D': [.4, .3, .3],
-                        'E': [.5, .5], 'F': [.4, .6],
-                        'S': [.3, .5, .2], 'T': [.8, .2]}
-    loc_links = pd.DataFrame({('A', 'B'): {0: [1, 1, 1], 1: [1, 1, 1], 2: [1, 1, 1], 3: [1, 1, 1]},
-                                    ('B', 'C'): {0: [1, 1, 1, 1], 1: [1, 1, 1, 1], 2: [1, 1, 1, 1]},
-                                    ('C', 'D'): {0: [0, 1, 1], 1: [1, 1, 1], 2: [1, 1, 1], 3: [1, 1, 1]},
-                                    ('E', 'F'): {0: [1, 1], 1: [1, 1]},
-                                    ('S', 'A'): {0: [1, 1, 1, 1], 1: [1, 1, 1, 1], 2: [1, 1, 1, 1]},
-                                    ('D', 'T'): {0: [1, 1], 1: [0, 1], 2: [1, 1]},
-                                    ('S', 'E'): {0: [1, 1], 1: [0, 1], 2: [0, 1]},
-                                    ('B', 'T'): {0: [1, 0], 1: [0, 0], 2: [0, 0]},
-                                    ('F', 'T'): {0: [1, 0], 1: [1, 1]}
-                                    })
+    nodes, loc, loc_links = dummy_data()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-t","--test",action="store_true")
+    parser.add_argument("-n","--nodes")
+    parser.add_argument("-l","--locality")
+    parser.add_argument("-p","--plot",action="store_true")
+    parser.add_argument("-r","--run",action="store_true")
+    args = parser.parse_args()
     
     ExhaustiveAlgorithm(nodes=nodes,loc=loc,loc_links=loc_links).main()

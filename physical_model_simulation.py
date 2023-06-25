@@ -481,32 +481,29 @@ class PhysicalModel:
             loc: the locality set of nodes
             links: the links between the nodes
             loc_links: the links between the nodes' locality set
+            nodes: the nodes
         '''
             
         self.simulate()
         dis_threshold = self._get_dis_threshold()
         self.build_location_probs(dis_threshold) # get the proabalities of being at each location for each node
+
         loc = self.build_loc()
         links = self.build_underlying_graph()
         loc_links = self.build_loc_links(links)
-        loc_name,links_name,loc_links_name = self.name_nodes(loc,links,loc_links)
 
-        return loc_name,links_name,loc_links_name
+        loc_name,links_name,loc_links_name = self.name_nodes(loc,links,loc_links)
+        nodes = list(loc_name.keys())
+        #nodes.append('T')
+
+        return loc_name,links_name,loc_links_name, nodes
 
             
 
         
 
     def main(self):
-        loc_name, links_name, loc_links_name = self.get_data()
-        #self.plot_underlying_graph(links)
-        
-        #print(loc_name)
-        #print('------------------')
-        print(links_name)
-        print('------------------')
-        #print(loc_links_name)
-
+        loc_name, links_name, loc_links_name, nodes = self.get_data()
         
 
 if __name__ == '__main__':

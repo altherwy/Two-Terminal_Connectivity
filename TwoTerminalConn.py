@@ -1,5 +1,6 @@
 from DisjointPaths import DisjointPaths
 import physical_model_simulation as pms
+import ExhaustiveAlgorithm as ex_algthm
 import pandas as pd
 import argparse
 
@@ -248,6 +249,7 @@ if __name__ == '__main__':
     loc = {}
     links = {}
     loc_links = {}
+    nodes = []
     if args.test:
         loc, links, loc_links = dummy_data()
     elif args.run:
@@ -255,18 +257,23 @@ if __name__ == '__main__':
             num_nodes = int(args.nodes)
             num_locality = int(args.locality)
         else:
-            num_nodes = 10
-            num_locality = 4
+            num_nodes = 6
+            num_locality = 3
         
         phys_model = pms.PhysicalModel(number_of_nodes=num_nodes, loc_set_max=num_locality)
-        loc, links, loc_links  = phys_model.get_data()
+        loc, links, loc_links,nodes  = phys_model.get_data()
         if args.plot:
             phys_model.plot_underlying_graph(links)
         print('loc: ', loc)
+        print('links: ', links)
+        print('loc_links: ', loc_links)
     else:
         print('Please enter the correct arguments')
         exit()
 
     TwoTerminal(links=links, loc=loc, loc_links=loc_links).main()
+    ea = ex_algthm.ExhaustiveAlgorithm(loc=loc, loc_links=loc_links, nodes=nodes)
+    ea.main()
+    
 
     
