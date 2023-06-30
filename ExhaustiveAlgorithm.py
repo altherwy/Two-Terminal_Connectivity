@@ -27,7 +27,7 @@ class ExhaustiveAlgorithm:
             int: The index of the current node in the nodes list.
         """
         node: str = self.nodes[node_ind]  # get the current node
-        node_loc: list = self.loc[node]  # get the location of the current node
+        node_loc: list = self.loc[node]  # get the locality set of the current node
 
         for j in range(len(node_loc)):
             conn_path[node] = j  # add connection to conn_path
@@ -80,6 +80,7 @@ class ExhaustiveAlgorithm:
             self.exhaustive_algorithm(1, node_loc[i], path, conn_path)
         # the total connectivity of the graph
         tot_conn = round(sum(self.prob.loc[self.prob['T'] != -1]['Probability']), 7)
+        print(len(self.prob))
         print(tot_conn)
     
 
@@ -95,9 +96,20 @@ def dummy_data():
         loc_links (pd.DataFrame): The links between nodes
     '''
     nodes = ['S', 'A', 'B', 'C', 'D', 'E', 'F', 'T']
+    #nodes = ['S', '1', '2', '3', '4', 'T']
+
     loc: dict = {'A': [.15, .25, .3, .3], 'B': [.4, .2, .4], 'C': [.2, .3, .4, .1], 'D': [.4, .3, .3],
                     'E': [.5, .5], 'F': [.4, .6],
                     'S': [.3, .5, .2], 'T': [.8, .2]}
+    '''
+    
+    loc = {'S': [0.33, 0.66], 
+           '1': [0.33], 
+           '2': [0.33, 0.33], 
+           '3': [0.33, 0.33], 
+           '4': [0.33, 0.33], 
+           'T': [0.33, 0.66]}
+    '''
     loc_links = pd.DataFrame({('A', 'B'): {0: [1, 1, 1], 1: [1, 1, 1], 2: [1, 1, 1], 3: [1, 1, 1]},
                                 ('B', 'C'): {0: [1, 1, 1, 1], 1: [1, 1, 1, 1], 2: [1, 1, 1, 1]},
                                 ('C', 'D'): {0: [0, 1, 1], 1: [1, 1, 1], 2: [1, 1, 1], 3: [1, 1, 1]},
@@ -108,6 +120,21 @@ def dummy_data():
                                 ('B', 'T'): {0: [1, 0], 1: [0, 0], 2: [0, 0]},
                                 ('F', 'T'): {0: [1, 0], 1: [1, 1]}
                                 })
+    '''
+    loc_links = pd.DataFrame({
+        ('S', '2'): {0: [1,1], 1: [1,1]},
+        ('S', '3'): {0: [1,1], 1: [1,1]},
+        ('S', '4'): {0: [1,1], 1: [1,1]},
+        ('1', '2'): {0: [1,1]},('1', '3'): {0: [1,1]},
+        ('1', '4'): {0: [1,1]},('1', 'T'): {0: [1,1]},
+        ('2', '3'): {0: [1,1], 1: [1,1]},
+        ('2', '4'): {0: [1,1], 1: [1,1]},
+        ('2', 'T'): {0: [1,1], 1: [1,1]},
+        ('3', '4'): {0: [1,1], 1: [1,1]},
+        ('3', 'T'): {0: [1,1], 1: [1,1]},
+        ('4', 'T'): {0: [1,1], 1: [1,1]},
+    })
+    '''
     return nodes, loc, loc_links
 
 
