@@ -4,84 +4,83 @@ class ExhaustiveAlgorithm:
     '''
     Computes the exact connectivity between two nodes (terminals)
     '''
-    def __init__(self, nodes: list = None, loc: dict = None, loc_links: pd.DataFrame = None) -> None:
+    def __init__(self, nodes: list, loc: dict, loc_links: pd.DataFrame, links:dict) -> None:
         self.loc = loc  # the locality sets of all nodes
         self.nodes = nodes  # the nodes in the graph
         self.loc_links = loc_links  # the links between nodes. For example, for nodes x and y, the format is as follows
-        # {x_0:[y_0,y_1, ..., y_n], x_1:[y_0,y_1,..., y_n], ... , x_n:[y_0,y_1, ..., y_n]}
-        self.columns = nodes + ['Probability']
-        self.prob = pd.DataFrame({}, columns=self.columns)
-        self.conn_prob = pd.DataFrame({}, columns=self.columns)   
-
-    def exhaustive_algorithm(self, node_ind: int, s_p: int, path: dict, conn_path: dict) -> int:
-        """
-        This method performs an exhaustive search of all possible paths from the source node to the target node.
-
+        self.links = links # the neighbours of each node
+        self.columns = self.nodes.copy()
+        self.columns.append('prob')
+        self.paths = pd.DataFrame(columns=self.columns)
+        self.ConnectedPathException = type('ConnectedPathException', (Exception,), {})
+    
+    def exhaustive_algorithm(self, node_id: int, path: list, prob: float) -> tuple:
+        '''
+        This method computes the exact connectivity between two nodes (terminals)
         Args:
-            node_ind (int): The index of the current node in the nodes list.
-            s_p (int): The probability of the path so far.
-            path (dict): A dictionary containing the nodes in the current path.
-            conn_path (dict): A dictionary containing the connections in the current path.
-
+            node_id (int): The index of the node in the nodes list
+            path (list): The path from the source to the current node
+            prob (float): The probability of the path
         Returns:
-            int: The index of the current node in the nodes list.
-        """
-        node: str = self.nodes[node_ind]  # get the current node
-        node_loc: list = self.loc[node]  # get the locality set of the current node
-
-        for j in range(len(node_loc)):
-            conn_path[node] = j  # add connection to conn_path
-            p = node_loc[j]  # get probability of connection
-            s_p *= p  # update probability of path so far
-            path: dict = self.__check_connection(node, j, path)  # add node to path
-            if node != 'T':
-                node_ind += 1  # next node in nodes list
-                node_ind = self.exhaustive_algorithm(node_ind, s_p, path, conn_path)  # recursive call
-                s_p /= p  # update probability of path so far
-            else:
-
-                indices = [v for k, v in path.items()]
-                indices.append(s_p)
-                self.prob.loc[len(self.prob.index)] = indices
-
-                indices = [v for k, v in conn_path.items()]
-                indices.append(s_p)
-                self.conn_prob.loc[len(self.conn_prob.index)] = indices
-
-                path.popitem()  # remove last node
-                conn_path.popitem()  # remove last connection
-                s_p /= p  # update probability of path so far
-                
-                node_ind -= 1  # go back to previous node     
-                return node_ind
-        node_ind -= 1  # go back to previous node     
-        return node_ind
-    def __check_connection(self,node: str, index: int, path: dict) -> dict:
-        for k, v in path.items():  # {S:0,A:0}
-            try:
-                links: dict = self.loc_links[(k, node)]
-            except KeyError as err:
-                continue
-            if v == -1:
-                continue
-            e = links[v][index]
-            if e == 1:
-                path[node] = index
-                return path
-        path[node] = -1
-        return path
-   
-    def main(self):
-        tot_conn = 0
-        node_loc: list = self.loc['S']
+            paths (pd.DataFrame): The paths from the source to the destination
+            prob (float): The probability of the path
+        '''
+        node = self.nodes[node_id]
+        node_loc = loc[node] # node_loc such as [.3, .5, .2]
         for i in range(len(node_loc)):
-            path: dict = {'S': i}
-            conn_path: dict = {'S': i}
-            self.exhaustive_algorithm(1, node_loc[i], path, conn_path)
-        # the total connectivity of the graph
-        tot_conn = round(sum(self.prob.loc[self.prob['T'] != -1]['Probability']), 7)
-        print(len(self.prob))
-        print(tot_conn)
+            path.append(i)
+            prob *= node_loc[i]
+            if node != 'T':
+                path, prob = self.exhaustive_algorithm(node_id+1,path,prob)
+                path.pop()
+                prob /= node_loc[i]
+            else:
+                path_prob = path.copy()
+                path_prob.append(prob)
+                self.paths.loc[len(self.paths)] = path_prob  # type: ignore
+                path.pop()
+                prob /= node_loc[i]
+        
+        return path, prob
+    
+    
+    
+    def path_isConnected(self,node:str,path:pd.Series):
+        node_pos = int(path[node])
+        neighbours = links[node]
+        for neighbour in neighbours:
+            neighbour_pos = int(path[neighbour]) # type: ignore
+            if self.isConnected(node,neighbour,node_pos,neighbour_pos):
+                if neighbour == 'T':
+                    raise self.ConnectedPathException('The path is connected')   
+                else:
+                    self.path_isConnected(neighbour,path)
+    
+    def isConnected(self,node:str,neighbour:str,node_pos:int,neighbour_pos:int):
+
+        connections = loc_links[(node,neighbour)]
+        connection = connections[node_pos][neighbour_pos]
+        if connection == 1:
+            return True
+        return False
+
+  
+    def main(self):
+        _,_ = self.exhaustive_algorithm(0,[],1)
+        self.paths['Connected'] = False
+        for i in range(len(self.paths)):
+            path = self.paths.loc[i]
+            try:
+                self.path_isConnected('S',path)
+            except self.ConnectedPathException as e:
+                self.paths.loc[i,'Connected'] = True
+                continue
+            self.paths.loc[i,'Connected'] = False
+        
+        print('Connectivity:',round(self.paths[self.paths['Connected'] == True]['prob'].sum(),2))
+
+
+        
     
 
  
@@ -135,13 +134,21 @@ def dummy_data():
         ('4', 'T'): {0: [1,1], 1: [1,1]},
     })
     '''
-    return nodes, loc, loc_links
+    links:dict = {
+    'S':['A','E'],
+    'A':['B'],
+    'B':['C','T'],
+    'C':['D'],
+    'D':['T'],
+    'E':['F'],
+    'F':['T']}
+    return nodes, loc, loc_links, links
 
 
         
 
 if __name__ == '__main__':
-    nodes, loc, loc_links = dummy_data()
+    
     parser = argparse.ArgumentParser()
     parser.add_argument("-t","--test",action="store_true")
     parser.add_argument("-n","--nodes")
@@ -150,4 +157,7 @@ if __name__ == '__main__':
     parser.add_argument("-r","--run",action="store_true")
     args = parser.parse_args()
     
-    ExhaustiveAlgorithm(nodes=nodes,loc=loc,loc_links=loc_links).main()
+    if args.test:
+        nodes, loc, loc_links, links = dummy_data()
+        ea = ExhaustiveAlgorithm(nodes=nodes,loc=loc,loc_links=loc_links, links=links)
+        ea.main()
