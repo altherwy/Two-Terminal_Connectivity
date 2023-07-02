@@ -151,7 +151,17 @@ for i in range(len(paths)):
         paths.loc[i,'Connected'] = True
         continue
     paths.loc[i,'Connected'] = False
+# %% Two Terminal Connectivity approach
+import DisjointPaths as dis_p
+algorithm = 'MaxFlow'
+dis_paths = dis_p.DisjointPaths(links)# type: ignore
+dps = dis_paths.runMaxFlow() if algorithm == 'MaxFlow' else dis_paths.runSSSP() 
 # %%
-prob_total = paths.loc[(paths['Connected'] == True)]['prob'].sum()
-prob_total
-# %%
+df_paths = paths[paths['Connected'] == True]
+df_paths['prob'] = [1] * len(df_paths)
+for dp in dps:
+    dp.append('Connected')
+    df = df_paths[dp]
+    print(df)
+#%%
+
