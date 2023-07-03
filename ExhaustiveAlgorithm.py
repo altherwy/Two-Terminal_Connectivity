@@ -12,6 +12,7 @@ class ExhaustiveAlgorithm:
         self.columns = self.nodes.copy()
         self.columns.append('prob')
         self.paths = pd.DataFrame(columns=self.columns)
+
         self.ConnectedPathException = type('ConnectedPathException', (Exception,), {})
     
     def exhaustive_algorithm(self, node_id: int, path: list, prob: float) -> tuple:
@@ -26,7 +27,7 @@ class ExhaustiveAlgorithm:
             prob (float): The probability of the path
         '''
         node = self.nodes[node_id]
-        node_loc = loc[node] # node_loc such as [.3, .5, .2]
+        node_loc = self.loc[node] # node_loc such as [.3, .5, .2]
         for i in range(len(node_loc)):
             path.append(i)
             prob *= node_loc[i]
@@ -47,7 +48,7 @@ class ExhaustiveAlgorithm:
     
     def path_isConnected(self,node:str,path:pd.Series):
         node_pos = int(path[node])
-        neighbours = links[node]
+        neighbours = self.links[node]
         for neighbour in neighbours:
             neighbour_pos = int(path[neighbour]) # type: ignore
             if self.isConnected(node,neighbour,node_pos,neighbour_pos):
@@ -58,7 +59,7 @@ class ExhaustiveAlgorithm:
     
     def isConnected(self,node:str,neighbour:str,node_pos:int,neighbour_pos:int):
 
-        connections = loc_links[(node,neighbour)]
+        connections = self.loc_links[(node,neighbour)]
         connection = connections[node_pos][neighbour_pos]
         if connection == 1:
             return True
@@ -118,6 +119,17 @@ def dummy_data():
                                 ('S', 'E'): {0: [1, 1], 1: [0, 1], 2: [0, 1]},
                                 ('B', 'T'): {0: [1, 0], 1: [0, 0], 2: [0, 0]},
                                 ('F', 'T'): {0: [1, 0], 1: [1, 1]}
+                                })
+    
+    loc_links = pd.DataFrame({('A', 'B'): {0: [1, 1, 1], 1: [1, 1, 1], 2: [1, 1, 1], 3: [1, 1, 1]},
+                                ('B', 'C'): {0: [1, 1, 1, 1], 1: [1, 1, 1, 1], 2: [1, 1, 1, 1]},
+                                ('C', 'D'): {0: [0, 1, 1], 1: [1, 1, 1], 2: [1, 1, 1], 3: [1, 1, 1]},
+                                ('E', 'F'): {0: [1, 1], 1: [1, 1]},
+                                ('S', 'A'): {0: [1, 1, 1, 1], 1: [1, 1, 1, 1], 2: [1, 1, 1, 1]},
+                                ('D', 'T'): {0: [1, 1], 1: [0, 1], 2: [1, 1]},
+                                ('S', 'E'): {0: [1, 1], 1: [1, 1], 2: [1, 1]},
+                                ('B', 'T'): {0: [1, 0], 1: [0, 0], 2: [0, 0]},
+                                ('F', 'T'): {0: [1, 1], 1: [1, 1]}
                                 })
     '''
     loc_links = pd.DataFrame({
