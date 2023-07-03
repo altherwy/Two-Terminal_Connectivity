@@ -1,4 +1,4 @@
-from DisjointPaths import DisjointPaths
+import DisjointPaths as dis_p
 import physical_model_simulation as pms
 import ExhaustiveAlgorithm as ex_algthm
 import pandas as pd
@@ -8,199 +8,77 @@ class TwoTerminal:
     '''
     Computes the connectivity between two nodes (terminals) on a node disjoint path graph
     '''
-    def __init__(self, links, loc, loc_links, dps = None, algorithm:str = 'MaxFlow'):
+    def __init__(self, links, loc, loc_links, paths, algorithm:str = 'MaxFlow'):
+        self.loc = loc  # the locality sets of all nodes
+        self.loc_links = loc_links  # the links between nodes. For example, for nodes x and y, the format is as follows
+        self.dis_paths = dis_p.DisjointPaths(links)# type: ignore
+        self.dps = self.dis_paths.runMaxFlow() if algorithm == 'MaxFlow' else self.dis_paths.runSSSP() 
+        self.df_paths = paths[paths['Connected'] == True].copy()
+        self.df_paths['prob'] = [1] * len(self.df_paths) # reset the probability to 1
+        self.ConnectedPathException = type('ConnectedPathException', (Exception,), {})
+        self.NotConnectedPathException = type('NotConnectedPathException', (Exception,), {})
+        self.two_terminal_data = {}
 
-         
-        self.loc = loc # type: ignore # the locality sets of all nodes 
-        self.loc_links = loc_links # the links between nodes. For example, for nodes x and y, the format is as follows
-                                #{x_0:[y_0,y_1, ..., y_n], x_1:[y_0,y_1,..., y_n], ... , x_n:[y_0,y_1, ..., y_n]}
-        self.algorithm = algorithm # the algorithm that returns the disjoint paths
-
-        # dps is empty
-        if dps is None:
-            dis_paths = DisjointPaths(links)# type: ignore
-            paths = dis_paths.runMaxFlow() if self.algorithm == 'MaxFlow' else dis_paths.runSSSP() 
-            print(paths)
-            self.dps = [path[1:-1] for path in paths] # the disjoint paths without terminals (i.e., without S and T)
-        else:
-            self.dps = dps # the disjoint paths 
-    
-    def compute_T_prob(self)->dict:
-        '''
-        Compute the T_probability tables for the disjoint-paths
-
-        Args:
-            dps (list): Disjoint-paths
-            loc (dict): Locality sets of all nodes 
-            loc_links (Dataframe): The links between nodes. For example, for nodes x and y, the format is as follows
-                                {x_0:[y_0,y_1, ..., y_n], x_1:[y_0,y_1,..., y_n], ... , x_n:[y_0,y_1, ..., y_n]} 
-        
-        Returns:
-            The T_probability tables for the disjoint-paths
-        '''
-        T_prob_tables:dict = {}
-        first_rows_num:int = 0
-        x = pd.DataFrame()
-        z = pd.DataFrame()
-        for dp in self.dps:
-            if len(dp) == 1: # the disjoint-path has only one node
-                z =  pd.DataFrame({0:self.loc[dp[0]]})
+    def two_terminal(self,node_id:int,path_index:int,df_path,dp:list):
+        node = dp[node_id]
+        neighbour = dp[node_id+1]
+        node_pos = int(df_path.loc[path_index,node]) # the locality set of the node in the path
+        neighbour_pos = int(df_path.loc[path_index,neighbour]) # the locality set of the neighbour in the path
+        if self.isConnected(node,neighbour,node_pos,neighbour_pos):
+            df_path.loc[path_index,'prob'] *= self.loc[neighbour][neighbour_pos]
+            if neighbour == 'T':
+                raise self.ConnectedPathException('The path is connected')
             else:
-                for i in range(len(dp) - 1):
-                    node:str = dp[i] # the current node i.e., 'A'
-                    if i == 0: # the first node in the disjoint-path
-                        x = self.loc[node] # the locality set of the first node (e.g., [.4,.6])
-                        first_rows_num = len(x) # the rows number of the first node in the disjoint-path
-                    next_node:str = dp[i+1]
-                    y:list = self.loc[next_node]
-
-                    rows_num = len(self.loc[node])
-                    columns_num = len(y)
-
-                    z = pd.DataFrame(0.0, index=range(first_rows_num), columns= range(columns_num)) # |Loc_x| * |Loc_y| 
-                    links:pd.DataFrame = self.get_links(node,next_node)
-                    
-                    for k in range(rows_num):
-                        for l in range(columns_num):
-                            if links.iat[k,l] == 1: # there is an edge
-                                
-                                if i == 0: # the first two nodes in a disjoint-path
-                                    z.iat[k,l] = z.iat[k,l] +  x[k]*y[l]
-                                else:
-                                    
-                                    column_vals = x.iloc[:,k]
-                                    indices = range(len(column_vals)) # indices length for node i in [i,j] 
-                                    for val, index in zip(column_vals,indices):# type: ignore
-                                        z.iat[index,l] += val * y[l]
-                                        
-                    x = z
-            T_prob_tables[tuple(dp)]= z
-            
-
-        return T_prob_tables
-
-    def compute_prob_tables(self,T_prob_tables:dict)->dict:
-        '''
-        Compute the probability tables for the disjoint-paths
-
-        Args:
-            dps (list): Disjoint-paths
-            T_prob_tables (dict): T_probability tables for the disjoint-paths
-
-        Returns:
-            The probability tables for the disjoint paths
-        '''
-        s:list = self.loc['S'] # the locality set of node 'S'
-        t:list = self.loc['T'] # the locality set of node 'T'
-        prob_tables:dict = {}
-        rows_num:int = len(s)
-        columns_num:int = len(t)
+                self.two_terminal(node_id+1,path_index,df_path,dp)
+        else:
+            raise self.NotConnectedPathException('The path is not connected')
         
-        for dp in self.dps: 
-            prob = pd.DataFrame(0.0,index=range(rows_num), columns= range(columns_num)) # size of the table is |Loc_s| * |Loc_t|
-            first_node:str = dp[0]
-            last_node:str = dp[-1]
-            
-            links_s_first = self.get_links('S',first_node)
-            links_last_t = self.get_links(last_node,'T')
-            T_prob_table = T_prob_tables[tuple(dp)] # T_probability table for a disjoint-path
+    def isConnected(self,node:str,neighbour:str,node_pos:int,neighbour_pos:int):
 
-            first_node_indices = T_prob_table.index.array
-            last_node_indices = T_prob_table.columns.array
-
-            for i in range(rows_num):
-                for j in range(columns_num):
-                    for a in first_node_indices:
-                        for b in last_node_indices:
-                            try:
-                                if links_s_first.iat[i,a] == 1 and links_last_t.iat[b,j] == 1:
-                                    prob.iat[i,j] += T_prob_table.iat[a,b]
-                            except IndexError as err:
-                                    print('Error path:',i,'->',a,'->',b,'->',j)
-                                    pass
-                                
-            prob_tables[tuple(dp)] = prob
-
-        return prob_tables
-
-    def compute_prob(self,prob_tables:dict)->pd.DataFrame:
+        connections = self.loc_links[(node,neighbour)]
+        connection = connections[node_pos][neighbour_pos]
+        if connection == 1:
+            return True
+        return False
+    
+    def get_connectivity(self):
         '''
-        Compute the probability table for the disjoint-paths
-
+        Computes the connectivity between two nodes (terminals) on a node disjoint path graph
         Args:
-            dps (list): Disjoint-paths
-            prob_tables (dict): The probability tables for the disjoint-paths
-
+            None
         Returns:
-            A single probability table for all disjoint paths
+            conn (float): the connectivity between two nodes (terminals) on a node disjoint path graph
         '''
-        s:list = self.loc['S'] # the locality set of node 'S'
-        t:list = self.loc['T'] # the locality set of node 'T'
-        rows_num:int = len(s)
-        columns_num:int = len(t)
-        prob = pd.DataFrame(0.0, index= range(rows_num), columns=range(columns_num))
-        for i in range(rows_num):
-            for j in range(columns_num):
-                temp:int = 1
-                for dp in self.dps:
-                    prob_table:pd.DataFrame = prob_tables[tuple(dp)]
-                    temp *= 1 - prob_table.iat[i,j]
-                prob.iat[i,j] = s[i]*t[j]*(1 - temp)
-        return prob    
-
-    def compute_2T_conn(self)->int:
-        '''
-        Compute the Two-Terminal connectivity
-
-        Args:
-            dps (list): Disjoint-paths
-            loc (dict): The locality sets for all nodes
-            loc_links (Dataframe): The links between nodes. For example, for nodes x and y, the format is as follows
-                                    {x_0:[y_0,y_1, ..., y_n], x_1:[y_0,y_1,..., y_n], ... , x_n:[y_0,y_1, ..., y_n]}
-
-        Returns:
-            The Two-Terminal connectivity between S and T
-        '''
-        T_prob_tables:dict = self.compute_T_prob()
-        prob_tables:dict = self.compute_prob_tables(T_prob_tables)
-        prob:pd.DataFrame = self.compute_prob(prob_tables) 
-        twoT_conn:int = 0
-        s:list = self.loc['S'] # the locality set of node 'S'
-        t:list = self.loc['T'] # the locality set of node 'T'
-        rows_num:int = len(s)
-        columns_num:int = len(t)
-        for i in range(rows_num):
-            for j in range(columns_num):
-                twoT_conn += prob.iat[i,j]
-        
-        return twoT_conn
-        
-    def get_links(self,x:str, y:str)->pd.DataFrame:
-        '''
-        Return the links (i.e., edges) table between two nodes x and y
-
-        Args:
-            x (str): a node
-            y (str): a neighbouring node to x 
-        
-        Returns:
-            The links between nodes x and y as a pandas ``Dataframe``
-        '''
-        links_x_y = self.loc_links[(x,y)]      
-        links_x_y = links_x_y.dropna() # remove NaN values
-        rows_num = len(links_x_y)
-        columns_num = len(links_x_y[0])
-        links = pd.DataFrame(0.0,index=range(rows_num), columns=range(columns_num)) 
-        for r in range(rows_num):
-            for c in range(columns_num):
-                links.iat[r,c] = links_x_y[r][c]
-        return links
+        conn = 0
+        for dp in self.dps:
+            connected_df = self.two_terminal_data[tuple(dp)]
+            connected_df = connected_df[connected_df['Connected'] == True]
+            conn += connected_df['prob'].sum()
+        return round(conn,2)
 
     
     
     def main(self):
-        twoT_conn = self.compute_2T_conn()
-        print(twoT_conn)
+        for dp in self.dps:
+            dp_copy = dp.copy()
+            dp_copy.append('Connected')
+            dp_copy.append('prob')
+            df_path = self.df_paths[dp_copy]
+            df_path = df_path.drop_duplicates(subset=dp) # drop duplicate paths
+            df_path.reset_index(drop=True,inplace=True) # reset the index starting from 0
+            for i in range(len(df_path)):
+                node_pos = int(df_path.loc[i,'S'])
+                df_path.loc[i,'prob'] *= self.loc['S'][node_pos]
+                try:
+                    self.two_terminal(0,i,df_path,dp)
+                except self.ConnectedPathException as e:
+                    df_path.loc[i,'Connected'] = True
+                except self.NotConnectedPathException as e:
+                    df_path.loc[i,'Connected'] = False
+            self.two_terminal_data[tuple(dp)] = df_path
+        
+        conn = self.get_connectivity()
+        return conn
 
 
 def dummy_data():
@@ -251,7 +129,7 @@ if __name__ == '__main__':
     loc_links = {}
     nodes = []
     if args.test:
-        loc, links, loc_links = dummy_data()
+        nodes, loc, loc_links, links = ex_algthm.dummy_data()
     elif args.run:
         if args.nodes and args.locality:
             num_nodes = int(args.nodes)
@@ -270,10 +148,12 @@ if __name__ == '__main__':
     else:
         print('Please enter the correct arguments')
         exit()
-
-    TwoTerminal(links=links, loc=loc, loc_links=loc_links).main()
-    ea = ex_algthm.ExhaustiveAlgorithm(loc=loc, loc_links=loc_links, nodes=nodes)
-    ea.main()
+    
+    ex_algthm = ex_algthm.ExhaustiveAlgorithm(nodes=nodes,loc=loc,loc_links=loc_links, links=links)
+    ex_algthm.main()
+    paths = ex_algthm.paths.copy()
+    conn = TwoTerminal(links=links, loc=loc, loc_links=loc_links,paths= paths).main()
+    print('conn: ', conn)
     
 
     
