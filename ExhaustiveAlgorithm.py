@@ -12,7 +12,6 @@ class ExhaustiveAlgorithm:
         self.columns = self.nodes.copy()
         self.columns.append('prob')
         self.paths = pd.DataFrame(columns=self.columns)
-
         self.ConnectedPathException = type('ConnectedPathException', (Exception,), {})
     
     def exhaustive_algorithm(self, node_id: int, path: list, prob: float) -> tuple:
