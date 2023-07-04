@@ -49,11 +49,18 @@ class TwoTerminal:
         Returns:
             conn (float): the connectivity between two nodes (terminals) on a node disjoint path graph
         '''
+        
         conn = 0
-        for dp in self.dps:
-            connected_df = self.two_terminal_data[tuple(dp)]
-            connected_df = connected_df[connected_df['Connected'] == True]
-            conn += connected_df['prob'].sum()
+        for i in range(len(self.loc['S'])):
+            s_prob = self.loc['S'][i]
+            for j in range(len(self.loc['T'])):
+                j_prob = self.loc['T'][j]
+                temp = 1
+                for dp in self.dps:
+                    connected_df = self.two_terminal_data[tuple(dp)]
+                    connected_df = connected_df[(connected_df['Connected'] == True) & (connected_df['S'] == i) & (connected_df['T'] == j)]
+                    temp *= 1 - (connected_df['prob'].sum() / (s_prob * j_prob))
+                conn += s_prob*j_prob*(1-temp)
         return round(conn,2)
 
     
