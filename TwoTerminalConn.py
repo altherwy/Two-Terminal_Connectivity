@@ -160,7 +160,7 @@ if __name__ == '__main__':
     ex_algthm.main()
     paths = ex_algthm.paths.copy()
     conn = TwoTerminal(links=links, loc=loc, loc_links=loc_links,paths= paths).main()
-    print('conn: ', conn)
+    print('Two Terminal Conn: ', conn)
     
 
     

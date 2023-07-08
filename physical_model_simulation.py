@@ -1,4 +1,4 @@
-from math import sin, cos,exp, pi, inf, sqrt
+from math import sin, cos,exp, pi, inf, sqrt, floor
 from jaal import Jaal
 import random as rand
 import plotly.express as px
@@ -154,18 +154,21 @@ class PhysicalModel:
             total_avg += avg / (len(df)-1)
         return total_avg/len(self.node_positions)
             
-    def build_location_probs(self, dis_threshold)->None:
+    def build_location_probs(self, dis_threshold, max_prob)->None:
         '''
         Builds the location probabilities for the nodes
         Args:
             dis_threshold: the distance threshold between two positions to be considered as the same node
+            max_prob: the maximum probability of a node being at a specific position
         Returns:
             None
 
         '''
         counter = 0
         for node_id in range(self.number_of_nodes):
-            pos_prob = 1/self.loc_set_max # probability of the node being at a specific position
+            #pos_prob = round(1/self.loc_set_max,2) # probability of the node being at a specific position
+            pos_prob = round(rand.randint(20,max_prob)/100,2)
+            pos_prob_counter = pos_prob
             x,y,z = zip(*self.node_positions.loc[node_id])
             add_flag = False
             temp_counter = 0
@@ -180,13 +183,19 @@ class PhysicalModel:
 
                 # if the node is reachable and the random number is not equal to the counter (for inactivity purposes)
                 # we can safely delete the last part of the condition to discard inactivity
-                if add_flag and rand.randint(0,self.loc_set_max) != counter: 
+                if add_flag: #and rand.randint(0,self.loc_set_max) != counter: 
                     self.node_positions_filtered.loc[counter] = [x_pos,y_pos,z_pos,node_id,pos_prob] # type: ignore
                     counter += 1
                     temp_counter += 1 
-                    pos_prob = 1/self.loc_set_max # reset the probability
+                    #pos_prob = round(1/self.loc_set_max,2) # reset the probability
+                    pos_prob = round(rand.randint(20,max_prob)/100,2)
+                    pos_prob_counter += pos_prob
                 else:
-                    pos_prob += 1/self.loc_set_max # increase the probability
+                    #pos_prob += round(1/self.loc_set_max,2) # increase the probability
+                    pos_prob += round(rand.randint(0, int(pos_prob*100))/100)
+                    pos_prob_counter += pos_prob
+                if pos_prob_counter >= 1:
+                    break
     
     def _get_coordinates(self,node_id:int,time:int):
         '''
@@ -367,12 +376,18 @@ class PhysicalModel:
             conn_list = []
             for j in range(len(node_2)):
                 coordinate_2 = node_2.iloc[j][['x','y','z']].values.tolist()
-                if self.is_reachable(coordinate_1,coordinate_2,dis_threshold):
+                if self.is_reachable(coordinate_1,coordinate_2,dis_threshold) and self._random_loc_set():
                     conn_list.append(1) # 1 means connected
                 else:
                     conn_list.append(0) # 0 means not connected
             conn_dict[i] = conn_list
         return (node_id_1, node_id_2),conn_dict
+    
+    def _random_loc_set(self, random_threshold=2):
+        num = rand.randint(0,random_threshold)
+        if num < random_threshold:
+            return True
+        return False
     
     def plot_underlying_graph(self,links):
         '''
@@ -486,7 +501,7 @@ class PhysicalModel:
             
         self.simulate()
         dis_threshold = self._get_dis_threshold()
-        self.build_location_probs(dis_threshold) # get the proabalities of being at each location for each node
+        self.build_location_probs(dis_threshold,90) # get the proabalities of being at each location for each node
 
         loc = self.build_loc()
         links = self.build_underlying_graph()
@@ -504,6 +519,10 @@ class PhysicalModel:
 
     def main(self):
         loc_name, links_name, loc_links_name, nodes = self.get_data()
+        print('loc_name: ', loc_name)
+        print('links_name: ', links_name)
+        print('loc_links_name: ', loc_links_name)
+        print('nodes: ', nodes)
         
 
 if __name__ == '__main__':
