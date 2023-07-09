@@ -195,6 +195,10 @@ class PhysicalModel:
                     pos_prob += round(rand.randint(0, int(pos_prob*100))/100)
                     pos_prob_counter += pos_prob
                 if pos_prob_counter >= 1:
+                    # sum the probabilities of the same node
+                    pos_prob = 1- self.node_positions_filtered[self.node_positions_filtered['node_id'] == node_id]['pos_prob'].sum()
+                    self.node_positions_filtered.loc[counter] = [x_pos,y_pos,z_pos,node_id,pos_prob] # type: ignore
+                    counter += 1
                     break
     
     def _get_coordinates(self,node_id:int,time:int):
@@ -376,7 +380,7 @@ class PhysicalModel:
             conn_list = []
             for j in range(len(node_2)):
                 coordinate_2 = node_2.iloc[j][['x','y','z']].values.tolist()
-                if self.is_reachable(coordinate_1,coordinate_2,dis_threshold) and self._random_loc_set():
+                if self.is_reachable(coordinate_1,coordinate_2,dis_threshold) and self._random_loc_set(1):
                     conn_list.append(1) # 1 means connected
                 else:
                     conn_list.append(0) # 0 means not connected
