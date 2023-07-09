@@ -3,6 +3,7 @@ from jaal import Jaal
 import random as rand
 import plotly.express as px
 import pandas as pd
+import multiprocessing as mp
 
 
 class PhysicalModel:
@@ -38,6 +39,11 @@ class PhysicalModel:
         self.node_initial_positions = list(self._generate_random_positions()) # generate random positions for the nodes
         self._reorder_node_positions() # reorder the nodes so that the two furtherest nodes are at the first and last positions of the node_initial_positions list
         self.node_positions_filtered = pd.DataFrame(columns=['x','y','z','node_id','pos_prob'])
+
+        self.links = {}
+        self.loc_links = pd.DataFrame()
+        self.nodes = []
+        self.loc = {}
 
     def _generate_random_positions(self, xspan=[-1*10**3, 1*10**3], yspan=[-0.5*10**3, 0.5*10**3], zspan=[-500, -100], ps_span=[1025, 1045]):
         '''
@@ -216,21 +222,7 @@ class PhysicalModel:
         coordinates = list(df.iloc[time][['x','y','z','node_id']])
         return coordinates
 
-    def plot_position_at_time(self,time:int):
-        
-        '''
-        Plots the position of a node at a given time
-        Args:
-            _time: the time at which the position is to be plotted
-        Returns:
-            None
-        '''
-        df_temp = pd.DataFrame(columns=['x','y','z','node_id'])
-        for i in range(self.number_of_nodes):
-            x,y,z,node_id = self._get_coordinates(i,time)
-            df_temp.loc[i] = [x,y,z,node_id] # type: ignore
-        fig = px.scatter_3d(df_temp,x='x',y='y',z='z',color='node_id')
-        fig.show()
+  
     
     def build_loc(self) -> dict[str, list[float]]:
         '''
@@ -354,7 +346,7 @@ class PhysicalModel:
         '''
         Builds the connection between nodes based on the distance threshold
         Args:
-            dis_threshold: the distance threshold
+            underlying_graph: the underlying graph
         Returns:
             None
         '''
@@ -367,6 +359,15 @@ class PhysicalModel:
                 a,b = self._build_connection(df,df2)
                 loc_links[a] = b
         return loc_links
+    
+    def build_loc_links_mp(self,key):
+        df = self.node_positions_filtered.loc[self.node_positions_filtered['node_id'] == key]
+        for neighbor in self.links[key]:
+            df2 = self.node_positions_filtered.loc[self.node_positions_filtered['node_id'] == neighbor]
+            a,b = self._build_connection(df,df2)
+            self.loc_links[a] = b
+
+        
     
     def _build_connection(self,node_1:pd.DataFrame,node_2:pd.DataFrame, dis_threshold=None):
         node_id_1 = node_1.iloc[0]['node_id']
@@ -503,6 +504,7 @@ class PhysicalModel:
             nodes: the nodes
         '''
         import time
+        import multiprocessing as mp
         start_time = time.time()
         print('Simulating the physical model...')
         self.simulate()
@@ -523,12 +525,19 @@ class PhysicalModel:
 
         start_time = time.time()
         print('Building the links between nodes in the same location...')
-        loc_links = self.build_loc_links(links)
+        # start the multiprocessing pool
+        pool = mp.Pool(7)
+        self.links = links
+        keys = list(self.links.keys())
+        pool.map(self.build_loc_links_mp, keys)
+        
+        #loc_links = self.build_loc_links(links)
+
         print("--- build_loc_links method runs in %s minutes ---" % ((time.time() - start_time)/60))
 
         start_time = time.time()
         print('Naming the nodes...')
-        loc_name,links_name,loc_links_name = self.name_nodes(loc,links,loc_links)
+        loc_name,links_name,loc_links_name = self.name_nodes(loc,self.links,self.loc_links)
         print("--- name_nodes method runs in %s minutes ---" % ((time.time() - start_time)/60))
         nodes = list(loc_name.keys())
         #nodes.append('T')
@@ -548,5 +557,5 @@ class PhysicalModel:
         
 
 if __name__ == '__main__':
-    sim = PhysicalModel(number_of_nodes=10, loc_set_max=3)
+    sim = PhysicalModel(number_of_nodes=50, loc_set_max=3)
     sim.main()
