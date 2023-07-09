@@ -4,6 +4,7 @@ import random as rand
 import plotly.express as px
 import pandas as pd
 import multiprocessing as mp
+import time
 
 
 class PhysicalModel:
@@ -41,7 +42,7 @@ class PhysicalModel:
         self.node_positions_filtered = pd.DataFrame(columns=['x','y','z','node_id','pos_prob'])
 
         self.links = {}
-        self.loc_links = pd.DataFrame()
+        self.loc_links = {}
         self.nodes = []
         self.loc = {}
 
@@ -202,7 +203,7 @@ class PhysicalModel:
                     pos_prob_counter += pos_prob
                 if pos_prob_counter >= 1:
                     # sum the probabilities of the same node
-                    pos_prob = 1- self.node_positions_filtered[self.node_positions_filtered['node_id'] == node_id]['pos_prob'].sum()
+                    pos_prob = round(1- self.node_positions_filtered[self.node_positions_filtered['node_id'] == node_id]['pos_prob'].sum(),2)
                     self.node_positions_filtered.loc[counter] = [x_pos,y_pos,z_pos,node_id,pos_prob] # type: ignore
                     counter += 1
                     break
@@ -224,61 +225,17 @@ class PhysicalModel:
 
   
     
-    def build_loc(self) -> dict[str, list[float]]:
+    def build_loc(self):
         '''
         Builds the locality set for each node as a dictionary
         Args:
             None
         Returns:
-            loc: the locality set for each node
+            None
         '''
-        loc:dict = {}
         for node_id in range(self.number_of_nodes):
             df = self.node_positions_filtered.loc[self.node_positions_filtered['node_id'] == node_id]
-            loc[node_id] = df['pos_prob'].values.tolist()
-        return loc
-    def get_max_distance(self):
-        '''
-        Returns the maximum distance between any two nodes and the corresponding nodes
-        Args:
-            None
-        Returns:
-            max_distance: the maximum distance between any two nodes
-        '''
-        max_distance = 0
-        fst_node_id = 0
-        snd_node_id = 0
-        for node_id in range(self.number_of_nodes-1):
-            df = self.node_positions_filtered.loc[self.node_positions_filtered['node_id'] == node_id]
-            coordinate_1 = df.iloc[0][['x','y','z']].values.tolist() # coordinates of node i
-            df = self.node_positions_filtered.loc[self.node_positions_filtered['node_id'] == node_id+1]
-            coordinate_2 = df.iloc[0][['x','y','z']].values.tolist() # coordinates of node i+1
-            distance = self._get_distance(coordinate_1,coordinate_2)
-            if distance > max_distance:
-                max_distance = distance
-                fst_node_id = node_id
-                snd_node_id = node_id+1
-        return round(max_distance,0),fst_node_id,snd_node_id
-    
-    def get_min_distance(self):
-        '''
-        Returns the minimum distance between any two nodes
-        Args:
-            None
-        Returns:
-            min_distance: the minimum distance between any two nodes
-        '''
-        min_distance = inf
-        for node_id in range(self.number_of_nodes-1):
-            df = self.node_positions_filtered.loc[self.node_positions_filtered['node_id'] == node_id]
-            coordinate_1 = df.iloc[0][['x','y','z']].values.tolist()
-            df = self.node_positions_filtered.loc[self.node_positions_filtered['node_id'] == node_id+1]
-            coordinate_2 = df.iloc[0][['x','y','z']].values.tolist()
-            distance = self._get_distance(coordinate_1,coordinate_2)
-            if distance < min_distance:
-                
-                min_distance = distance
-        return round(min_distance,0)
+            self.loc[node_id] = df['pos_prob'].values.tolist()
     
     def get_avg_distance(self):
         '''
@@ -317,7 +274,7 @@ class PhysicalModel:
             std_distance += (distance-avg_distance)**2
         return round(sqrt(std_distance/(self.number_of_nodes-1)),0) 
 
-    def build_underlying_graph(self,dis_threshold = None)->dict[str, list[str]]:
+    def build_underlying_graph(self,dis_threshold = None):
         '''
         Builds the connection between nodes based on the distance threshold
         Args:
@@ -325,7 +282,7 @@ class PhysicalModel:
         Returns:
             None
         '''
-        conn_list = {}
+        
         if dis_threshold == None:
             dis_threshold = self.get_avg_distance() + self.get_standard_deviation_distance()
         for node_id in range(self.number_of_nodes-1):
@@ -338,35 +295,35 @@ class PhysicalModel:
                 distance = self._get_distance(coordinate_1,coordinate_2)
                 if distance < dis_threshold:
                     neighbor_list.append(node_id_2)
-            conn_list[node_id] = neighbor_list
+            self.links[node_id] = neighbor_list # type: ignore
             
-        return conn_list
     
-    def build_loc_links(self,underlying_graph):
+    def build_loc_links(self):
         '''
         Builds the connection between nodes based on the distance threshold
         Args:
-            underlying_graph: the underlying graph
+            None
         Returns:
             None
         '''
-        keys = list(underlying_graph.keys())
-        loc_links = {}
+        keys = list(self.links.keys()) # type: ignore
         for key in keys:
             df = self.node_positions_filtered.loc[self.node_positions_filtered['node_id'] == key] # get the position of node i
-            for neighbor in underlying_graph[key]:
+            for neighbor in self.links[key]: # type: ignore
                 df2 = self.node_positions_filtered.loc[self.node_positions_filtered['node_id'] == neighbor] # get the position of neighbor node to node i
                 a,b = self._build_connection(df,df2)
-                loc_links[a] = b
-        return loc_links
+                self.loc_links[a] = b
     
     def build_loc_links_mp(self,key):
+        conn_res = {}
         df = self.node_positions_filtered.loc[self.node_positions_filtered['node_id'] == key]
-        for neighbor in self.links[key]:
+        for neighbor in self.links[key]: # type: ignore
             df2 = self.node_positions_filtered.loc[self.node_positions_filtered['node_id'] == neighbor]
             a,b = self._build_connection(df,df2)
-            self.loc_links[a] = b
+            conn_res[a] = b
 
+        
+        return conn_res
         
     
     def _build_connection(self,node_1:pd.DataFrame,node_2:pd.DataFrame, dis_threshold=None):
@@ -413,7 +370,7 @@ class PhysicalModel:
         df_edge = pd.DataFrame({'from':from_list,'to':to_list})
         Jaal(df_edge,df_node).plot()
     
-    def name_nodes(self, loc, links, loc_links):
+    def name_nodes(self):
         '''
         Changes the node_id of nodes to alphabetic characters
         Args:
@@ -426,69 +383,43 @@ class PhysicalModel:
             loc_links_name: the links between nodes in the same location with alphabetic characters
         '''
         
-        # get the last node_id
-        #first_node = chr(self.node_positions_filtered.iloc[0]['node_id'] + 65)
-        #last_node = chr(self.node_positions_filtered.iloc[-1]['node_id'] + 65)
-        # change to character
-
-
-            
-        # chane the node_id of links to alphabetic characters
+        
         links_name = {}
-        #for key in links.keys():
-            # links_name[chr(key+65)] = [chr(i+65) for i in links[key]]
-        links_name = {}
-        for key in links.keys():
+        for key in self.links.keys(): # type: ignore
             if key == 0:
                 temp_list = []
-                for i in links[key]:
+                for i in self.links[key]: # type: ignore
                     temp_list.append(str(i)) if i != self.number_of_nodes - 1 else temp_list.append('T')
                 links_name['S'] = temp_list
 
-            #elif key == self.number_of_nodes - 1:
-            #    links_name['T'] = [str(i) for i in links[key]]
             else:
                 temp_list = []
-                for i in links[key]:
+                for i in self.links[key]: # type: ignore
                     temp_list.append(str(i)) if i != self.number_of_nodes - 1 else temp_list.append('T')
                 links_name[str(key)] = temp_list
     
-        # replace the first node and last character to S and T, respectively
-        #links_name['S'] = links_name.pop('A')
-        #links_name['T'] = links_name.pop(chr(self.number_of_nodes-1+65))
-
-        # change all the keys of loc_links to alphabetic characters
-        loc_links_name = {}
-        
-        
-        for key in loc_links.keys():
-            #from_node = chr(int(key[0])+65)
+        loc_links_name = {}    
+        for key in self.loc_links.keys():
             if key[0] == 0:
                 from_node = 'S'
             else:
                 from_node = str(int(key[0]))
-            #to_node = chr(int(key[1])+65)
+            
             if key[1] == self.number_of_nodes - 1:
                 to_node = 'T'
             else:
                 to_node = str(int(key[1]))
 
-            loc_links_name[from_node,to_node] = loc_links[key]
-        # replace the first node and last character of loc_links_name to S and T, respectively
-        #loc_links_name['S'] = loc_links_name.pop(('A',chr(self.number_of_nodes-1+65)))
-        #loc_links_name['T'] = loc_links_name.pop(('A',chr(self.number_of_nodes-1+65)))
+            loc_links_name[from_node,to_node] = self.loc_links[key]
         
-
-       
-        # change the node_id of loc to alphabetic characters
         loc_name = {}
-        for key in loc.keys():
+        for key in self.loc.keys():
             if key == 0:
-                loc_name['S'] = loc[key]
+                loc_name['S'] = self.loc[key]
             elif key == self.number_of_nodes - 1:
-                loc_name['T'] = loc[key]
+                loc_name['T'] = self.loc[key]
             else:
-                loc_name[str(key)] = loc[key]
+                loc_name[str(key)] = self.loc[key]
         df_loc_links = pd.DataFrame.from_dict(loc_links_name)
         return loc_name, links_name, df_loc_links
     
@@ -503,59 +434,49 @@ class PhysicalModel:
             loc_links: the links between the nodes' locality set
             nodes: the nodes
         '''
-        import time
-        import multiprocessing as mp
-        start_time = time.time()
-        print('Simulating the physical model...')
+        
         self.simulate()
-        print("--- simulate method runs in %s minutes ---" % ((time.time() - start_time)/60))
         dis_threshold = self._get_dis_threshold()
-        start_time = time.time()
-        print('Building the location probabilities...')
         self.build_location_probs(dis_threshold,90) # get the proabalities of being at each location for each node
-        print("--- build_location_probs method runs in %s minutes ---" % ((time.time() - start_time)/60))
-        start_time = time.time()
-        print('Building the underlying graph...')
-        loc = self.build_loc()
-        print("--- build_loc method runs in %s minutes ---" % ((time.time() - start_time)/60))
-        start_time = time.time()
-        print('Building the links between nodes...')
-        links = self.build_underlying_graph()
-        print("--- build_underlying_graph method runs in %s minutes ---" % ((time.time() - start_time)/60))
+        self.build_loc()
+        self.build_underlying_graph()
 
         start_time = time.time()
         print('Building the links between nodes in the same location...')
         # start the multiprocessing pool
         pool = mp.Pool(7)
-        self.links = links
         keys = list(self.links.keys())
-        pool.map(self.build_loc_links_mp, keys)
+        results = pool.map(self.build_loc_links_mp, keys)
         
-        #loc_links = self.build_loc_links(links)
-
+        # results to self.loc_links
+        for result in results:
+            for key in result.keys():
+                self.loc_links[key] = result[key]
         print("--- build_loc_links method runs in %s minutes ---" % ((time.time() - start_time)/60))
 
-        start_time = time.time()
-        print('Naming the nodes...')
-        loc_name,links_name,loc_links_name = self.name_nodes(loc,self.links,self.loc_links)
-        print("--- name_nodes method runs in %s minutes ---" % ((time.time() - start_time)/60))
-        nodes = list(loc_name.keys())
-        #nodes.append('T')
+        
+        loc_name,links_name,loc_links_name = self.name_nodes()
+        self.nodes = list(loc_name.keys())
+        
 
-        return loc_name,links_name,loc_links_name, nodes
+        return loc_name,links_name,loc_links_name
 
             
 
         
 
     def main(self):
-        loc_name, links_name, loc_links_name, nodes = self.get_data()
+        loc_name, links_name, loc_links_name = self.get_data()
+        
+        
         print('loc_name: ', loc_name)
         print('links_name: ', links_name)
         print('loc_links_name: ', loc_links_name)
-        print('nodes: ', nodes)
-        
+        print('nodes: ', self.nodes)
+    
 
 if __name__ == '__main__':
-    sim = PhysicalModel(number_of_nodes=50, loc_set_max=3)
+    start_time = time.time()
+    sim = PhysicalModel(number_of_nodes=10, loc_set_max=3)
     sim.main()
+    print("--- total running time  %s minutes ---" % (round((time.time() - start_time)/60,2)))

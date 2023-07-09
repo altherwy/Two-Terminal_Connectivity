@@ -1,16 +1,13 @@
 #%%
-import time
 import physical_model_simulation as pms
-start_time = time.time()
-number_of_nodes = 50
-number_of_localities = 3
-phys_model = pms.PhysicalModel(number_of_nodes = number_of_nodes, loc_set_max=number_of_localities)
-loc, links,loc_links, nodes = phys_model.get_data()
-print(loc)
-print(links)
-print(loc_links)
-print(nodes)
-print("---total running time  %s minutes ---" % ((time.time() - start_time)/60))
+import time
+
+if __name__ == '__main__':
+    start_time = time.time()
+    sim = pms.PhysicalModel(number_of_nodes=10, loc_set_max=3)
+    sim.main()
+    print("--- total running time  %s minutes ---" % (round((time.time() - start_time)/60,2)))
+
 # %%
 import time
 start_time = time.time()
