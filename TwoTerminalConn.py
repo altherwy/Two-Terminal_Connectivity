@@ -85,7 +85,7 @@ class TwoTerminal:
             self.two_terminal_data[tuple(dp)] = df_path
         
         conn = self.get_connectivity()
-        return conn
+        print('Two Terminal Conn: ', conn)
 
 
 def dummy_data():
@@ -159,8 +159,8 @@ if __name__ == '__main__':
     ex_algthm = ex_algthm.ExhaustiveAlgorithm(nodes=nodes,loc=loc,loc_links=loc_links, links=links)
     ex_algthm.main()
     paths = ex_algthm.paths.copy()
-    conn = TwoTerminal(links=links, loc=loc, loc_links=loc_links,paths= paths).main()
-    print('Two Terminal Conn: ', conn)
+    TwoTerminal(links=links, loc=loc, loc_links=loc_links,paths= paths).main()
+    
     
 
     

@@ -502,16 +502,34 @@ class PhysicalModel:
             loc_links: the links between the nodes' locality set
             nodes: the nodes
         '''
-            
+        import time
+        start_time = time.time()
+        print('Simulating the physical model...')
         self.simulate()
+        print("--- simulate method runs in %s minutes ---" % ((time.time() - start_time)/60))
         dis_threshold = self._get_dis_threshold()
+        start_time = time.time()
+        print('Building the location probabilities...')
         self.build_location_probs(dis_threshold,90) # get the proabalities of being at each location for each node
-
+        print("--- build_location_probs method runs in %s minutes ---" % ((time.time() - start_time)/60))
+        start_time = time.time()
+        print('Building the underlying graph...')
         loc = self.build_loc()
+        print("--- build_loc method runs in %s minutes ---" % ((time.time() - start_time)/60))
+        start_time = time.time()
+        print('Building the links between nodes...')
         links = self.build_underlying_graph()
-        loc_links = self.build_loc_links(links)
+        print("--- build_underlying_graph method runs in %s minutes ---" % ((time.time() - start_time)/60))
 
+        start_time = time.time()
+        print('Building the links between nodes in the same location...')
+        loc_links = self.build_loc_links(links)
+        print("--- build_loc_links method runs in %s minutes ---" % ((time.time() - start_time)/60))
+
+        start_time = time.time()
+        print('Naming the nodes...')
         loc_name,links_name,loc_links_name = self.name_nodes(loc,links,loc_links)
+        print("--- name_nodes method runs in %s minutes ---" % ((time.time() - start_time)/60))
         nodes = list(loc_name.keys())
         #nodes.append('T')
 
