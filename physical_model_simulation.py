@@ -480,10 +480,16 @@ class PhysicalModel:
             json.dump(loc_name,f)
         f.close()
         
-        loc_links_name.to_csv(r'loc_links_data/%s.csv'%ts,index=False)
+        #loc_links_name.to_csv(r'loc_links_data/%s.csv'%ts,index=False, merge_cells=True)
+        loc_links_dict = loc_links_name.to_dict()
+        my_dict_str = {str(k): v for k, v in loc_links_dict.items()}
+        with open(r'loc_links_data/%s.json'%ts,'w') as f:
+            json.dump(my_dict_str,f)
+        f.close()
         
 
-
+    
+    
     def main(self):
         loc_name, links_name, loc_links_name = self.get_data()
         self.output(loc_name, links_name, loc_links_name)

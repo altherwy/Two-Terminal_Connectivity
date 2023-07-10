@@ -1,5 +1,6 @@
 import argparse
 import pandas as pd
+import json
 class ExhaustiveAlgorithm:
     '''
     Computes the exact connectivity between two nodes (terminals)
@@ -63,6 +64,9 @@ class ExhaustiveAlgorithm:
         if connection == 1:
             return True
         return False
+
+    
+
 
   
     def main(self):
@@ -155,7 +159,26 @@ def dummy_data():
     'F':['T']}
     return nodes, loc, loc_links, links
 
+def input(file_name):
+    with open('loc_data/%s.txt'%file_name) as f:
+        loc = json.load(f)
+    f.close()
 
+    with open('links_data/%s.txt'%file_name) as f:
+        links = json.load(f)
+    f.close()
+
+    with open('loc_links_data/%s.json'%file_name) as f:
+        str_dict = json.load(f)
+    f.close()
+    loc_links_dict = {tuple(eval(k)): v for k, v in str_dict.items()}
+    loc_links = pd.DataFrame(loc_links_dict)
+
+    with open('node_data/%s.txt'%file_name) as f:
+        nodes = f.read().splitlines()
+    f.close()
+
+    return loc, links, loc_links, nodes
         
 
 if __name__ == '__main__':
@@ -166,9 +189,18 @@ if __name__ == '__main__':
     parser.add_argument("-l","--locality")
     parser.add_argument("-p","--plot",action="store_true")
     parser.add_argument("-r","--run",action="store_true")
+    parser.add_argument("-s","--stamp")
     args = parser.parse_args()
     
+    nodes = []
+    loc = {}
+    links = {}
+    loc_links = pd.DataFrame()
     if args.test:
         nodes, loc, loc_links, links = dummy_data()
-        ea = ExhaustiveAlgorithm(nodes=nodes,loc=loc,loc_links=loc_links, links=links)
-        ea.main()
+    elif args.run:
+        ts = args.stamp # timestamp as the file name
+        input(ts)
+        
+    #ea = ExhaustiveAlgorithm(nodes=nodes,loc=loc,loc_links=loc_links, links=links)
+    #ea.main()
