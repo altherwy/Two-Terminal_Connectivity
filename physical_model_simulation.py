@@ -5,6 +5,8 @@ import plotly.express as px
 import pandas as pd
 import multiprocessing as mp
 import time
+from datetime import datetime
+import json
 
 
 class PhysicalModel:
@@ -444,7 +446,7 @@ class PhysicalModel:
         start_time = time.time()
         print('Building the links between nodes in the same location...')
         # start the multiprocessing pool
-        pool = mp.Pool(7)
+        pool = mp.Pool(3)
         keys = list(self.links.keys())
         results = pool.map(self.build_loc_links_mp, keys)
         
@@ -462,12 +464,29 @@ class PhysicalModel:
         return loc_name,links_name,loc_links_name
 
             
+    def output(self, loc_name, links_name, loc_links_name):
+        dt = datetime.now()
+        ts = datetime.strftime(dt,'%Y%m%d%H%M%S')
+        with open(r'node_data/%s.txt'%ts,'w') as f:
+            for node in self.nodes:
+                f.write(node + '\n')
+        f.close()
 
+        with open(r'links_data/%s.txt'%ts,'w') as f:
+            json.dump(links_name,f)
+        f.close()
+
+        with open(r'loc_data/%s.txt'%ts,'w') as f:
+            json.dump(loc_name,f)
+        f.close()
         
+        loc_links_name.to_csv(r'loc_links_data/%s.csv'%ts,index=False)
+        
+
 
     def main(self):
         loc_name, links_name, loc_links_name = self.get_data()
-        
+        self.output(loc_name, links_name, loc_links_name)
         
         print('loc_name: ', loc_name)
         print('links_name: ', links_name)
