@@ -1,6 +1,7 @@
 import argparse
 import pandas as pd
 import json
+import time
 class ExhaustiveAlgorithm:
     '''
     Computes the exact connectivity between two nodes (terminals)
@@ -14,6 +15,8 @@ class ExhaustiveAlgorithm:
         self.columns.append('prob')
         self.paths = pd.DataFrame(columns=self.columns)
         self.ConnectedPathException = type('ConnectedPathException', (Exception,), {})
+        self.path_calculated = 0
+        self.number_of_paths = self._number_of_paths()
     
     def exhaustive_algorithm(self, node_id: int, path: list, prob: float) -> tuple:
         '''
@@ -41,6 +44,11 @@ class ExhaustiveAlgorithm:
                 self.paths.loc[len(self.paths)] = path_prob  # type: ignore
                 path.pop()
                 prob /= node_loc[i]
+
+                self.path_calculated +=1
+                if self.path_calculated % 500 == 0 and self.path_calculated >= 500:
+                    print("path calculated: ",self.path_calculated)
+                    print("path to calculate: ",self.number_of_paths - self.path_calculated)
         
         return path, prob
     
@@ -65,6 +73,11 @@ class ExhaustiveAlgorithm:
             return True
         return False
 
+    def _number_of_paths(self):
+        number_of_paths = 1
+        for key in self.loc.keys():
+            number_of_paths *= len(self.loc[key])
+        return number_of_paths
     
 
 
@@ -182,7 +195,7 @@ def input(file_name):
         
 
 if __name__ == '__main__':
-    
+    start_time = time.time()
     parser = argparse.ArgumentParser()
     parser.add_argument("-t","--test",action="store_true")
     parser.add_argument("-n","--nodes")
@@ -190,6 +203,7 @@ if __name__ == '__main__':
     parser.add_argument("-p","--plot",action="store_true")
     parser.add_argument("-r","--run",action="store_true")
     parser.add_argument("-s","--stamp")
+    parser.add_argument("-o","--output")
     args = parser.parse_args()
     
     nodes = []
@@ -198,9 +212,15 @@ if __name__ == '__main__':
     loc_links = pd.DataFrame()
     if args.test:
         nodes, loc, loc_links, links = dummy_data()
-    elif args.run:
+    elif args.run and args.stamp:
         ts = args.stamp # timestamp as the file name
-        input(ts)
+        loc,links,loc_links,nodes =  input(ts)
+    else:
+        print('Please enter the timestamp of the data')
+        exit()
+    
         
-    #ea = ExhaustiveAlgorithm(nodes=nodes,loc=loc,loc_links=loc_links, links=links)
-    #ea.main()
+    ea = ExhaustiveAlgorithm(nodes=nodes,loc=loc,loc_links=loc_links, links=links)
+    print("number of paths is: ",ea.number_of_paths)
+    ea.main()
+    print("--- total running time  %s minutes ---" % (round((time.time() - start_time)/60,2)))

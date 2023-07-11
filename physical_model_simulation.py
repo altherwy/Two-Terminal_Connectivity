@@ -1,3 +1,4 @@
+import argparse
 from math import sin, cos,exp, pi, inf, sqrt, floor
 from jaal import Jaal
 import random as rand
@@ -439,14 +440,14 @@ class PhysicalModel:
         
         self.simulate()
         dis_threshold = self._get_dis_threshold()
-        self.build_location_probs(dis_threshold,90) # get the proabalities of being at each location for each node
+        self.build_location_probs(dis_threshold,50) # get the proabalities of being at each location for each node
         self.build_loc()
         self.build_underlying_graph()
 
         start_time = time.time()
         print('Building the links between nodes in the same location...')
         # start the multiprocessing pool
-        pool = mp.Pool(3)
+        pool = mp.Pool(7)
         keys = list(self.links.keys())
         results = pool.map(self.build_loc_links_mp, keys)
         
@@ -480,28 +481,46 @@ class PhysicalModel:
             json.dump(loc_name,f)
         f.close()
         
-        #loc_links_name.to_csv(r'loc_links_data/%s.csv'%ts,index=False, merge_cells=True)
         loc_links_dict = loc_links_name.to_dict()
         my_dict_str = {str(k): v for k, v in loc_links_dict.items()}
         with open(r'loc_links_data/%s.json'%ts,'w') as f:
             json.dump(my_dict_str,f)
         f.close()
-        
-
     
-    
-    def main(self):
-        loc_name, links_name, loc_links_name = self.get_data()
-        self.output(loc_name, links_name, loc_links_name)
-        
+    def print_data(self, loc_name, links_name, loc_links_name):
         print('loc_name: ', loc_name)
         print('links_name: ', links_name)
         print('loc_links_name: ', loc_links_name)
         print('nodes: ', self.nodes)
+        
+
+    
+    
+    def main(self, print_flag=False):
+        loc_name, links_name, loc_links_name = self.get_data()
+        self.output(loc_name, links_name, loc_links_name)
+        if print_flag:
+            self.print_data(loc_name, links_name, loc_links_name)
+        
     
 
 if __name__ == '__main__':
-    start_time = time.time()
-    sim = PhysicalModel(number_of_nodes=10, loc_set_max=3)
-    sim.main()
-    print("--- total running time  %s minutes ---" % (round((time.time() - start_time)/60,2)))
+    parser  = argparse.ArgumentParser()
+    parser.add_argument("-n","--nodes")
+    parser.add_argument("-l","--locality")
+    parser.add_argument("-o","--output",action='store_false')
+    args = parser.parse_args()
+    
+    if args.nodes and args.locality:
+        start_time = time.time()
+        print_flag = False
+        sim = PhysicalModel(number_of_nodes=int(args.nodes), loc_set_max=int(args.locality))
+        if args.output:
+            print_flag = True
+        
+        sim.main(print_flag)
+        print("--- total running time  %s minutes ---" % (round((time.time() - start_time)/60,2)))
+    else:
+        print('Please enter the number of nodes and the locality set max')
+        print('Example: python physical_model_simulation.py -n 10 -l 3')
+        exit()
