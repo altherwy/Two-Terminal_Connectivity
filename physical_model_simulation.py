@@ -14,7 +14,7 @@ class PhysicalModel:
     '''
     Simulates a physical model of a sensor network
     '''
-    def __init__(self, days=1, loc_set_max=10, number_of_nodes=10):
+    def __init__(self, days=1, loc_set_max=10, number_of_nodes=10, conn_level=2):
         self.k1 = 0.3*pi
         self.k2 = pi
         self.k3 = 2*pi
@@ -48,6 +48,10 @@ class PhysicalModel:
         self.loc_links = {}
         self.nodes = []
         self.loc = {}
+        
+        self.file_name = None
+
+        self.conn_level = conn_level # medium connectivity level
 
     def _generate_random_positions(self, xspan=[-1*10**3, 1*10**3], yspan=[-0.5*10**3, 0.5*10**3], zspan=[-500, -100], ps_span=[1025, 1045]):
         '''
@@ -164,11 +168,12 @@ class PhysicalModel:
             total_avg += avg / (len(df)-1)
         return total_avg/len(self.node_positions)
             
-    def build_location_probs(self, dis_threshold, max_prob)->None:
+    def build_location_probs(self, dis_threshold, min_prob , max_prob)->None:
         '''
         Builds the location probabilities for the nodes
         Args:
             dis_threshold: the distance threshold between two positions to be considered as the same node
+            min_prob: the minimum probability of a node being at a specific position
             max_prob: the maximum probability of a node being at a specific position
         Returns:
             None
@@ -177,7 +182,7 @@ class PhysicalModel:
         counter = 0
         for node_id in range(self.number_of_nodes):
             #pos_prob = round(1/self.loc_set_max,2) # probability of the node being at a specific position
-            pos_prob = round(rand.randint(20,max_prob)/100,2)
+            pos_prob = round(rand.randint(min_prob,max_prob)/100,2)
             pos_prob_counter = pos_prob
             x,y,z = zip(*self.node_positions.loc[node_id])
             add_flag = False
@@ -198,17 +203,18 @@ class PhysicalModel:
                     counter += 1
                     temp_counter += 1 
                     #pos_prob = round(1/self.loc_set_max,2) # reset the probability
-                    pos_prob = round(rand.randint(20,max_prob)/100,2)
+                    pos_prob = round(rand.randint(min_prob,max_prob)/100,2)
                     pos_prob_counter += pos_prob
                 else:
                     #pos_prob += round(1/self.loc_set_max,2) # increase the probability
                     pos_prob += round(rand.randint(0, int(pos_prob*100))/100)
                     pos_prob_counter += pos_prob
-                if pos_prob_counter >= 1:
+                if pos_prob_counter >= 1 or temp_counter == self.loc_set_max-1: 
                     # sum the probabilities of the same node
                     pos_prob = round(1- self.node_positions_filtered[self.node_positions_filtered['node_id'] == node_id]['pos_prob'].sum(),2)
                     self.node_positions_filtered.loc[counter] = [x_pos,y_pos,z_pos,node_id,pos_prob] # type: ignore
                     counter += 1
+                    
                     break
     
     def _get_coordinates(self,node_id:int,time:int):
@@ -341,7 +347,7 @@ class PhysicalModel:
             conn_list = []
             for j in range(len(node_2)):
                 coordinate_2 = node_2.iloc[j][['x','y','z']].values.tolist()
-                if self.is_reachable(coordinate_1,coordinate_2,dis_threshold) and self._random_loc_set(1):
+                if self.is_reachable(coordinate_1,coordinate_2,dis_threshold) and self._random_loc_set(self.conn_level):
                     conn_list.append(1) # 1 means connected
                 else:
                     conn_list.append(0) # 0 means not connected
@@ -437,10 +443,33 @@ class PhysicalModel:
             loc_links: the links between the nodes' locality set
             nodes: the nodes
         '''
-        
+        dict_min_prob = {
+            1:60,
+            2:50,
+            3:20,
+            4:10,
+            5:10,
+            6:0
+        }
+
+        dict_max_prob = {
+            1:100,
+            2:80,
+            3:70,
+            4:40,
+            5:20,
+            6:20
+        }
+        if self.loc_set_max in dict_min_prob.keys():
+            min_prob = dict_min_prob[self.loc_set_max]
+            max_prob = dict_max_prob[self.loc_set_max]
+        else:
+            min_prob = 0
+            max_prob = 20
+
         self.simulate()
         dis_threshold = self._get_dis_threshold()
-        self.build_location_probs(dis_threshold,50) # get the proabalities of being at each location for each node
+        self.build_location_probs(dis_threshold,min_prob=min_prob, max_prob=max_prob) # get the proabalities of being at each location for each node
         self.build_loc()
         self.build_underlying_graph()
 
@@ -486,6 +515,8 @@ class PhysicalModel:
         with open(r'loc_links_data/%s.json'%ts,'w') as f:
             json.dump(my_dict_str,f)
         f.close()
+
+        return ts
     
     def print_data(self, loc_name, links_name, loc_links_name):
         print('loc_name: ', loc_name)
@@ -498,9 +529,7 @@ class PhysicalModel:
     
     def main(self, print_flag=False):
         loc_name, links_name, loc_links_name = self.get_data()
-        self.output(loc_name, links_name, loc_links_name)
-        if print_flag:
-            self.print_data(loc_name, links_name, loc_links_name)
+        self.file_name = self.output(loc_name, links_name, loc_links_name)
         
     
 
@@ -508,17 +537,20 @@ if __name__ == '__main__':
     parser  = argparse.ArgumentParser()
     parser.add_argument("-n","--nodes")
     parser.add_argument("-l","--locality")
-    parser.add_argument("-o","--output",action='store_false')
+    parser.add_argument("-p","--print",action='store_true')
+    parser.add_argument("-cl","--connection_level")
+
     args = parser.parse_args()
-    
+   
     if args.nodes and args.locality:
         start_time = time.time()
-        print_flag = False
         sim = PhysicalModel(number_of_nodes=int(args.nodes), loc_set_max=int(args.locality))
-        if args.output:
-            print_flag = True
-        
-        sim.main(print_flag)
+        if args.connection_level:
+            sim.conn_level = int(args.connection_level)
+        if args.print:
+            sim.main(print_flag=True)
+        else:
+            sim.main()
         print("--- total running time  %s minutes ---" % (round((time.time() - start_time)/60,2)))
     else:
         print('Please enter the number of nodes and the locality set max')

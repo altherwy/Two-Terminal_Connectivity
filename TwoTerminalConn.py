@@ -18,6 +18,7 @@ class TwoTerminal:
         self.ConnectedPathException = type('ConnectedPathException', (Exception,), {})
         self.NotConnectedPathException = type('NotConnectedPathException', (Exception,), {})
         self.two_terminal_data = {}
+        self.connectivity = 0
 
     def two_terminal(self,node_id:int,path_index:int,df_path,dp:list):
         node = dp[node_id]
@@ -84,8 +85,7 @@ class TwoTerminal:
                     df_path.loc[i,'Connected'] = False
             self.two_terminal_data[tuple(dp)] = df_path
         
-        conn = self.get_connectivity()
-        print('Two Terminal Conn: ', conn)
+        self.connectivity = self.get_connectivity()
 
 
 def dummy_data():
@@ -146,7 +146,7 @@ if __name__ == '__main__':
             num_locality = 3
         
         phys_model = pms.PhysicalModel(number_of_nodes=num_nodes, loc_set_max=num_locality)
-        loc, links, loc_links,nodes  = phys_model.get_data()
+        loc, links, loc_links  = phys_model.get_data()
         if args.plot:
             phys_model.plot_underlying_graph(links)
         print('loc: ', loc)

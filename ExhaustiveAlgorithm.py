@@ -2,6 +2,9 @@ import argparse
 import pandas as pd
 import json
 import time
+import supabase_client as sc
+import TwoTerminalConn as ttc
+import physical_model_simulation as pms
 class ExhaustiveAlgorithm:
     '''
     Computes the exact connectivity between two nodes (terminals)
@@ -17,6 +20,7 @@ class ExhaustiveAlgorithm:
         self.ConnectedPathException = type('ConnectedPathException', (Exception,), {})
         self.path_calculated = 0
         self.number_of_paths = self._number_of_paths()
+        self.connectivity = 0
     
     def exhaustive_algorithm(self, node_id: int, path: list, prob: float) -> tuple:
         '''
@@ -93,8 +97,8 @@ class ExhaustiveAlgorithm:
                 self.paths.loc[i,'Connected'] = True
                 continue
             self.paths.loc[i,'Connected'] = False
-        
-        print('Connectivity:',round(self.paths[self.paths['Connected'] == True]['prob'].sum(),2))
+        self.connectivity = round(self.paths[self.paths['Connected'] == True]['prob'].sum(),2)
+        print('Connectivity:',self.connectivity)
 
 
         
@@ -192,35 +196,98 @@ def input(file_name):
     f.close()
 
     return loc, links, loc_links, nodes
+
+
+def run_physical_model(number_of_nodes,loc_set_max, conn_level):
+    start_time = time.time()
+    sim = pms.PhysicalModel(number_of_nodes=number_of_nodes, loc_set_max=loc_set_max, conn_level=conn_level)
+    sim.main()
+    running_time = (round((time.time() - start_time)/60,2))
+    print("--- total running time  %s minutes ---" % running_time)
+    return sim.file_name
+    
+
+
+def run_exhaustive(loc,links,loc_links,nodes, loc_set_max):
+    ea = ExhaustiveAlgorithm(nodes=nodes,loc=loc,loc_links=loc_links, links=links)
+    print("number of paths is: ",ea.number_of_paths)
+    ea.main()
+    running_time = (round((time.time() - start_time)/60,2))
+    print("--- total running time  %s minutes ---" % running_time)
+
+    data, count = sc.supabase.table('exhaustive_algorithms').insert({"nodes":len(ea.nodes),"locality_sets":loc_set_max,
+                                                              "connectivity":ea.connectivity,"running_time":running_time}).execute()
+    # fetch the id of the exhaustive algorithm
+    reponse = sc.supabase.table('exhaustive_algorithms').select("id").eq("running_time",
+                                running_time).eq("connectivity",ea.connectivity).execute()
+    exhaustive_id = reponse.data[0]['id']
+    return ea.paths, exhaustive_id
+
+def run_two_terminal(loc,links,loc_links,exhaustive_paths, exhaustive_id, algorithm):
+    start_time = time.time()
+    paths = exhaustive_paths.copy()
+    two_ter_conn = ttc.TwoTerminal(links=links, loc=loc,loc_links=loc_links,paths=paths)
+    two_ter_conn.main()
+    running_time = (round((time.time() - start_time)/60,2))
+    print("--- total running time  %s minutes ---" % running_time)
+
+    if algorithm == 'MaxFlow':
+        algorithm = 'MF'
+
+    data, count = sc.supabase.table('two_terminals').insert({"connectivity":two_ter_conn.connectivity,
+                                                             "running_time":running_time,
+                                                             "algorithm":algorithm,
+                                                             "exhaustive_algorithm_id":exhaustive_id}).execute()
         
 
 if __name__ == '__main__':
+    
     start_time = time.time()
     parser = argparse.ArgumentParser()
     parser.add_argument("-t","--test",action="store_true")
     parser.add_argument("-n","--nodes")
     parser.add_argument("-l","--locality")
+    parser.add_argument("-cl","--connection_level")
     parser.add_argument("-p","--plot",action="store_true")
-    parser.add_argument("-r","--run",action="store_true")
-    parser.add_argument("-s","--stamp")
-    parser.add_argument("-o","--output")
+
     args = parser.parse_args()
     
     nodes = []
     loc = {}
     links = {}
     loc_links = pd.DataFrame()
+    number_nodes = 0
+    loc_set_max = 0
+    file_name = ''
+    connection_level = 2
+    '''
     if args.test:
         nodes, loc, loc_links, links = dummy_data()
-    elif args.run and args.stamp:
-        ts = args.stamp # timestamp as the file name
-        loc,links,loc_links,nodes =  input(ts)
+    elif args.nodes and args.locality:
+        number_nodes = int(args.nodes)
+        loc_set_max = int(args.locality)
+        if args.connection_level:
+            connection_level = int(args.connection_level)
     else:
-        print('Please enter the timestamp of the data')
+        print('Please enter the number of nodes and the maximum number of locality sets')
+        print('Example: python ExhaustiveAlgorithm.py -n 10 -l 3')
         exit()
-    
+    '''
+    df_experiment_list = pd.read_csv('experiment_list.csv')
+    for i in range(len(df_experiment_list)):
+        number_nodes = int(df_experiment_list.iloc[i]['number_nodes'])
+        loc_set_max = int(df_experiment_list.iloc[i]['loc_set_max'])
+        connection_level = int(df_experiment_list.iloc[i]['connection_level'])
         
-    ea = ExhaustiveAlgorithm(nodes=nodes,loc=loc,loc_links=loc_links, links=links)
-    print("number of paths is: ",ea.number_of_paths)
-    ea.main()
-    print("--- total running time  %s minutes ---" % (round((time.time() - start_time)/60,2)))
+
+        file_name = run_physical_model(number_of_nodes= number_nodes,loc_set_max=loc_set_max, conn_level=connection_level)
+        loc,links,loc_links,nodes =  input(file_name)
+        paths, exhaustive_id = run_exhaustive(loc=loc,links=links,loc_links=loc_links,nodes=nodes, loc_set_max=loc_set_max)
+        run_two_terminal(loc=loc,links=links,loc_links=loc_links,exhaustive_paths=paths, exhaustive_id=exhaustive_id, algorithm='MaxFlow')
+        run_two_terminal(loc=loc,links=links,loc_links=loc_links,exhaustive_paths=paths, exhaustive_id=exhaustive_id, algorithm='SSSP')
+        
+
+        
+    
+
+
