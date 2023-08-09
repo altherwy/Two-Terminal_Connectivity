@@ -3,6 +3,7 @@ import supabase_client as sc
 import pandas as pd
 from matplotlib import pyplot as plt
 resolution = 1200
+ylim = [0,100]
 def _unpack_two_terminals(row, attr = 'connectivity'):
     temp = row[0]
     return temp[attr]
@@ -43,12 +44,14 @@ df_nodes = df[['nodes','mean_exh_conn', 'mean_ttc_conn', 'std_exh_conn', 'std_tt
 df_nodes = df_nodes.sort_values(by=['nodes'], ignore_index=True)
 df_nodes = df_nodes.set_index('nodes')
 # %% plot and save figure
-plt.errorbar(df_nodes.index, df_nodes['mean_exh_conn'], yerr=df_nodes['std_exh_conn'], label='Exhaustive') # type: ignore
-plt.errorbar(df_nodes.index, df_nodes['mean_ttc_conn'], yerr=df_nodes['std_ttc_conn'], label='Two-Terminals') # type: ignore
+plt.errorbar(df_nodes.index, df_nodes['mean_exh_conn'], yerr=df_nodes['std_exh_conn'], label='Exact') # type: ignore
+plt.errorbar(df_nodes.index, df_nodes['mean_ttc_conn'], yerr=df_nodes['std_ttc_conn'], label='Lower Bound') # type: ignore
 plt.xlabel('Nodes')
 plt.ylabel('Connectivity (%)')
+plt.ylim(ylim)
+plt.grid()
 plt.legend()
-#plt.savefig('figures/nodes vs connectivity.png', dpi=resolution, format='png')
+plt.savefig('figures/nodes vs connectivity.png', dpi=resolution, format='png')
 '''
 ///////////////////////////////////////////
 End of nodes vs. connectivity (MF algorithm)
