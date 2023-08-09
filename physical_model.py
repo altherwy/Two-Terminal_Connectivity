@@ -107,6 +107,7 @@ plt.errorbar(df_loc_set.index, df_loc_set['mean_exh_conn'], yerr=df_loc_set['std
 plt.errorbar(df_loc_set.index, df_loc_set['mean_ttc_conn'], yerr=df_loc_set['std_ttc_conn'], label='Two-Terminals') # type: ignore
 plt.xlabel('Locality Sets')
 plt.ylabel('Connectivity (%)')
+plt.ylim([0,100])
 plt.legend()
 #plt.savefig('figures/locality sets vs connectivity.png', dpi=resolution, format='png')
 '''
@@ -152,7 +153,7 @@ plt.errorbar(df_loc_time.index, df_loc_time['ttc_running_time'], yerr=df_loc_tim
 plt.xlabel('Locality Sets')
 plt.ylabel('Running Time (min)')
 plt.legend()
-plt.savefig('figures/locality sets vs running time.png', dpi=resolution, format='png')
+#plt.savefig('figures/locality sets vs running time.png', dpi=resolution, format='png')
 '''
 ////////////////////////////////////////
 End of running time vs. locality sets
@@ -160,6 +161,5 @@ End of running time vs. locality sets
 
 '''
 # %%
-import ExhaustiveAlgorithm as ea
-ea.input()
+df_loc_time
 # %%
