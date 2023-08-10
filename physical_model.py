@@ -63,11 +63,11 @@ Start of difference between the mean of exhaustive and two terminals (MF)
 df_nodes['diff'] = df_nodes['mean_exh_conn'] - df_nodes['mean_ttc_conn']
 df_nodes['diff'] = df_nodes['diff'].apply(lambda x: round(x,2))
 # %% plot and save figure
-plt.bar(df_nodes.index, df_nodes['diff'])
+b = plt.bar(df_nodes.index, df_nodes['diff'], zorder = 3)
 plt.xlabel('Nodes')
 plt.ylabel('Difference (%)')
-reolsution = 1200
-#plt.savefig('figures/diff nodes vs connectivity.png', dpi=resolution, format='png')
+plt.grid()
+plt.savefig('figures/diff_nodes_vs_connectivity.png', dpi=resolution, format='png')
 
 '''
 ///////////////////////////////////////////////////////////////////
@@ -106,13 +106,15 @@ df_loc_set = df_conn_loc[['locality_sets','mean_exh_conn', 'mean_ttc_conn', 'std
 df_loc_set = df_loc_set.sort_values(by=['locality_sets'], ignore_index=True)
 df_loc_set = df_loc_set.set_index('locality_sets')
 #%% plot and save figure
-plt.errorbar(df_loc_set.index, df_loc_set['mean_exh_conn'], yerr=df_loc_set['std_exh_conn'], label='Exhaustive') # type: ignore
-plt.errorbar(df_loc_set.index, df_loc_set['mean_ttc_conn'], yerr=df_loc_set['std_ttc_conn'], label='Two-Terminals') # type: ignore
-plt.xlabel('Locality Sets')
+plt.errorbar(df_loc_set.index, df_loc_set['mean_exh_conn'], yerr=df_loc_set['std_exh_conn'], label='Exact') # type: ignore
+plt.errorbar(df_loc_set.index, df_loc_set['mean_ttc_conn'], yerr=df_loc_set['std_ttc_conn'], label='Lower Bound') # type: ignore
+plt.xlabel(r'$Loc_{max}$')
 plt.ylabel('Connectivity (%)')
 plt.ylim([0,100])
+plt.grid()
+plt.xticks([2,3,4,5])
 plt.legend()
-#plt.savefig('figures/locality sets vs connectivity.png', dpi=resolution, format='png')
+plt.savefig('figures/locality_sets_vs_connectivity.png', dpi=resolution, format='png')
 '''
 ///////////////////////////////////////////////////////////////////
 End of connectivity vs. locality sets (MF algorithm)
@@ -130,12 +132,13 @@ df_node_time.loc[8,'std_ttc_time'] = 0.01
 
 
 # %% plot and save figure
-plt.errorbar(df_node_time.index, df_node_time['running_time'], yerr=df_node_time['std_exh_time'], label='Exhaustive', fmt='*') # type: ignore
-plt.errorbar(df_node_time.index, df_node_time['ttc_running_time'], yerr=df_node_time['std_ttc_time'], label='Two-Terminals', fmt= 'o') # type: ignore
+plt.errorbar(df_node_time.index, df_node_time['running_time'], yerr=df_node_time['std_exh_time'], label='Exact', fmt='*') # type: ignore
+plt.errorbar(df_node_time.index, df_node_time['ttc_running_time'], yerr=df_node_time['std_ttc_time'], label='Lower Bound', fmt= 'o') # type: ignore
 plt.xlabel('Nodes')
 plt.ylabel('Running Time (min)')
-plt.legend()
-#plt.savefig('figures/nodes vs running time.png', dpi=resolution, format='png')
+plt.grid()
+plt.legend(loc=2)
+plt.savefig('figures/nodes_vs_running_time.png', dpi=resolution, format='png')
 '''
 ////////////////////////////////////////
 End of running time vs. nodes
@@ -151,12 +154,14 @@ df_loc_time.loc[3,'running_time'] = 76.91
 df_loc_time.loc[3,'std_exh_time'] = 0.134
 df_loc_time.loc[3,'std_ttc_time'] = 0.01
 # %% plot and save figure
-plt.errorbar(df_loc_time.index, df_loc_time['running_time'], yerr=df_loc_time['std_exh_time'], label='Exhaustive', fmt='*') # type: ignore
-plt.errorbar(df_loc_time.index, df_loc_time['ttc_running_time'], yerr=df_loc_time['std_ttc_time'], label='Two-Terminals', fmt= 'o') # type: ignore
-plt.xlabel('Locality Sets')
+plt.errorbar(df_loc_time.index, df_loc_time['running_time'], yerr=df_loc_time['std_exh_time'], label='Exact', fmt='*') # type: ignore
+plt.errorbar(df_loc_time.index, df_loc_time['ttc_running_time'], yerr=df_loc_time['std_ttc_time'], label='Lower Bound', fmt= 'o') # type: ignore
+plt.xlabel(r'$Loc_{max}$')
 plt.ylabel('Running Time (min)')
+plt.xticks([2,3,4,5])
 plt.legend()
-#plt.savefig('figures/locality sets vs running time.png', dpi=resolution, format='png')
+plt.grid()
+plt.savefig('figures/locality_sets_vs_running_time.png', dpi=resolution, format='png')
 '''
 ////////////////////////////////////////
 End of running time vs. locality sets
