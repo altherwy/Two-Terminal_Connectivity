@@ -204,11 +204,11 @@ def run_physical_model(number_of_nodes,loc_set_max, conn_level):
     sim.main()
     running_time = (round((time.time() - start_time)/60,2))
     print("--- total running time  %s minutes ---" % running_time)
-    return sim.file_name
+    return sim.file_name, sim.number_of_cores
     
 
 
-def run_exhaustive(loc,links,loc_links,nodes, loc_set_max):
+def run_exhaustive(loc,links,loc_links,nodes, loc_set_max, number_cores):
     ea = ExhaustiveAlgorithm(nodes=nodes,loc=loc,loc_links=loc_links, links=links)
     print("number of paths is: ",ea.number_of_paths)
     ea.main()
@@ -216,7 +216,7 @@ def run_exhaustive(loc,links,loc_links,nodes, loc_set_max):
     print("--- total running time  %s minutes ---" % running_time)
 
     data, count = sc.supabase.table('exhaustive_algorithms').insert({"nodes":len(ea.nodes),"locality_sets":loc_set_max,
-                                                              "connectivity":ea.connectivity,"running_time":running_time}).execute()
+                                                              "connectivity":ea.connectivity,"running_time":running_time,"number_cores":number_cores}).execute()
     # fetch the id of the exhaustive algorithm
     reponse = sc.supabase.table('exhaustive_algorithms').select("id").eq("running_time",
                                 running_time).eq("connectivity",ea.connectivity).execute()
@@ -280,9 +280,9 @@ if __name__ == '__main__':
         connection_level = int(df_experiment_list.iloc[i]['connection_level'])
         
 
-        file_name = run_physical_model(number_of_nodes= number_nodes,loc_set_max=loc_set_max, conn_level=connection_level)
+        file_name, number_cores = run_physical_model(number_of_nodes= number_nodes,loc_set_max=loc_set_max, conn_level=connection_level)
         loc,links,loc_links,nodes =  input(file_name)
-        paths, exhaustive_id = run_exhaustive(loc=loc,links=links,loc_links=loc_links,nodes=nodes, loc_set_max=loc_set_max)
+        paths, exhaustive_id = run_exhaustive(loc=loc,links=links,loc_links=loc_links,nodes=nodes, loc_set_max=loc_set_max, number_cores=number_cores)
         run_two_terminal(loc=loc,links=links,loc_links=loc_links,exhaustive_paths=paths, exhaustive_id=exhaustive_id, algorithm='MaxFlow')
         #run_two_terminal(loc=loc,links=links,loc_links=loc_links,exhaustive_paths=paths, exhaustive_id=exhaustive_id, algorithm='SSSP')
         
