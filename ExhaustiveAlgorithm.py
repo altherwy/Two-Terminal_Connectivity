@@ -35,7 +35,8 @@ class ExhaustiveAlgorithm:
         '''
         node = self.nodes[node_id]
         node_loc = self.loc[node] # node_loc such as [.3, .5, .2]
-        for i in range(len(node_loc)):
+        node_loc_length = len(node_loc) - 1 if len(node_loc) > 1 else 1
+        for i in range(node_loc_length):
             path.append(i)
             prob *= node_loc[i]
             if node != 'T':
