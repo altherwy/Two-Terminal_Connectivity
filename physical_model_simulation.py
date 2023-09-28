@@ -245,9 +245,15 @@ class PhysicalModel:
         Returns:
             None
         '''
+        counter: int = 0
         for node_id in range(self.number_of_nodes):
             df = self.node_positions_filtered.loc[self.node_positions_filtered['node_id'] == node_id]
             self.loc[node_id] = df['pos_prob'].values.tolist()
+            # slice self.loc to include the first and second positions only
+            self.loc[node_id] = self.loc[node_id][0:2] if len(self.loc[node_id]) > 2 else self.loc[node_id]
+            counter += 1
+            if counter > 16:
+                self.loc[node_id] = self.loc[node_id][0:1]
     
     def get_avg_distance(self):
         '''
