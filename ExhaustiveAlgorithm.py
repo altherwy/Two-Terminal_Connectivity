@@ -219,7 +219,7 @@ def run_exhaustive(loc,links,loc_links,nodes, loc_set_max, number_cores):
                                                               "connectivity":ea.connectivity,"running_time":running_time,"number_cores":number_cores}).execute()
     # fetch the id of the exhaustive algorithm
     reponse = sc.supabase.table('exhaustive_algorithms').select("id").eq("running_time",
-                                running_time).eq("connectivity",ea.connectivity).execute()
+                                running_time).eq("connectivity",ea.connectivity).eq("number_cores",number_cores).execute()
     exhaustive_id = reponse.data[0]['id']
     return ea.paths, exhaustive_id
 
