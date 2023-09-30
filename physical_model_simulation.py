@@ -538,6 +538,7 @@ class PhysicalModel:
     
     def main(self, print_flag=False):
         loc_name, links_name, loc_links_name = self.get_data()
+        print('------------------------------ Done ------------------------------')
         self.file_name = self.output(loc_name, links_name, loc_links_name)
         
     
