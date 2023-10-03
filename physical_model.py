@@ -171,3 +171,7 @@ End of running time vs. locality sets
 # %%
 df_loc_time
 # %%
+reponse = sc.supabase.table('exhaustive_algorithms')\
+    .select('connectivity , nodes, running_time, two_terminals(connectivity)').execute()
+reponse.data
+# %%

@@ -1,2 +1,4 @@
-
-*.txt
+node_data/
+loc_links_data/
+loc_data/
+links_data/

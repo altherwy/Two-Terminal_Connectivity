@@ -2,9 +2,10 @@ import argparse
 from math import sin, cos,exp, pi, inf, sqrt, floor
 from jaal import Jaal
 import random as rand
-import plotly.express as px
+#import plotly.express as px
 import pandas as pd
 import multiprocessing as mp
+import psutil
 import time
 from datetime import datetime
 import json
@@ -38,7 +39,9 @@ class PhysicalModel:
         self.loc_set_max = loc_set_max
         self.interval = self.days_in_seconds//self.loc_set_max # interval between two node's positions
         self.number_of_nodes = number_of_nodes
-
+        cpus = psutil.cpu_count(logical=False) # only physical cores
+        self.number_of_cores = cpus - 1 if cpus > 1 else 1  # no logical cores
+        print('Number of cores: ', self.number_of_cores)
         self.node_positions = pd.DataFrame(index=range(number_of_nodes) ,columns=range(loc_set_max)) # dataframe to store the locations of the nodes at different times
         self.node_initial_positions = list(self._generate_random_positions()) # generate random positions for the nodes
         self._reorder_node_positions() # reorder the nodes so that the two furtherest nodes are at the first and last positions of the node_initial_positions list
@@ -476,7 +479,7 @@ class PhysicalModel:
         start_time = time.time()
         print('Building the links between nodes in the same location...')
         # start the multiprocessing pool
-        pool = mp.Pool(7)
+        pool = mp.Pool(self.number_of_cores)
         keys = list(self.links.keys())
         results = pool.map(self.build_loc_links_mp, keys)
         
@@ -529,6 +532,7 @@ class PhysicalModel:
     
     def main(self, print_flag=False):
         loc_name, links_name, loc_links_name = self.get_data()
+        print('------------------ Done ------------------')
         self.file_name = self.output(loc_name, links_name, loc_links_name)
         
     
