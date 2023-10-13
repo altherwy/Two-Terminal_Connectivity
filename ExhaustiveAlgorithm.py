@@ -43,9 +43,9 @@ class ExhaustiveAlgorithm:
 
 
             for i in range(len(node_loc)):
-
-                if not self.isConnected(node,neighbour_node,i,neighbour_node_loc) and node_id != 0:
-                    continue
+                if node_id != 0:
+                    if not self.isConnected(node,neighbour_node,i,neighbour_node_loc):
+                        continue
 
                 path[node] = i
                 prob *= node_loc[i]
