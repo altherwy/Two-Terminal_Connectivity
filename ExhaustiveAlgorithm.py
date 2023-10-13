@@ -102,7 +102,7 @@ class ExhaustiveAlgorithm:
 
   
     def main(self):
-        _,_ = self.exhaustive_algorithm(0,[],1)
+        _,_ = self.exhaustive_algorithm(0,{},1)
         print('--------------- before connected -----------------')
         self.paths['Connected'] = False
         for i in range(len(self.paths)):
