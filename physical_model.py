@@ -175,3 +175,8 @@ reponse = sc.supabase.table('exhaustive_algorithms')\
     .select('connectivity , nodes, running_time, two_terminals(connectivity)').execute()
 reponse.data
 # %%
+import pandas as pd
+df = pd.DataFrame({'A':1,'B':2},index=[0])
+df = pd.concat([df, pd.DataFrame({'A':3,'B':4}, index=[0])], ignore_index=True)
+df
+# %%

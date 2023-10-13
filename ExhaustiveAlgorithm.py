@@ -22,38 +22,53 @@ class ExhaustiveAlgorithm:
         self.number_of_paths = self._number_of_paths()
         self.connectivity = 0
     
-    def exhaustive_algorithm(self, node_id: int, path: list, prob: float) -> tuple:
+    def exhaustive_algorithm(self, node_id: int, path: dict, prob: float) -> tuple:
         '''
         This method computes the exact connectivity between two nodes (terminals)
         Args:
             node_id (int): The index of the node in the nodes list
-            path (list): The path from the source to the current node
+            path (dict): The path from the source to the current node
             prob (float): The probability of the path
         Returns:
             paths (pd.DataFrame): The paths from the source to the destination
             prob (float): The probability of the path
         '''
-        node = self.nodes[node_id]
-        node_loc = self.loc[node] # node_loc such as [.3, .5, .2]
-        for i in range(len(node_loc)):
-            path.append(i)
-            prob *= node_loc[i]
-            if node != 'T':
-                path, prob = self.exhaustive_algorithm(node_id+1,path,prob)
-                path.pop()
-                prob /= node_loc[i]
-            else:
-                path_prob = path.copy()
-                path_prob.append(prob)
-                self.paths.loc[len(self.paths)] = path_prob  # type: ignore
-                path.pop()
-                prob /= node_loc[i]
+        while(True):
+            
+            node = self.nodes[node_id]
+            node_loc = self.loc[node] # node_loc such as [.3, .5, .2]
+            if node_id != 0:
+                neighbour_node = list(path.items())[-1]
+                neighbour_node_loc = path[neighbour_node]
 
-                self.path_calculated +=1
-                if self.path_calculated % 500 == 0 and self.path_calculated >= 500:
-                    print("path calculated: ",self.path_calculated)
-                    print("path to calculate: ",self.number_of_paths - self.path_calculated)
-        
+
+            for i in range(len(node_loc)):
+
+                if not self.isConnected(node,neighbour_node,i,neighbour_node_loc) and node_id != 0:
+                    continue
+
+                path[node] = i
+                prob *= node_loc[i]
+                if node != 'T':
+                    path, prob = self.exhaustive_algorithm(node_id+1,path,prob)
+                    path.popitem()
+                    prob /= node_loc[i]
+                else:
+                    
+                    path['probability'] = prob
+                    self.paths = pd.concat([self.paths, pd.DataFrame(path, index=[0])], ignore_index=True)
+                    path.popitem()
+                    prob /= node_loc[i]
+
+                    self.path_calculated +=1
+                    if self.path_calculated % 500 == 0 and self.path_calculated >= 500:
+                        print("path calculated: ",self.path_calculated)
+                        print("path to calculate: ",self.number_of_paths - self.path_calculated)
+            
+            if node == 'T':
+                break
+            else:
+                node_id += 1
         return path, prob
     
     
@@ -116,13 +131,15 @@ def dummy_data():
         loc (dict): The locality sets of all nodes
         loc_links (pd.DataFrame): The links between nodes
     '''
-    nodes = ['S', 'A', 'B', 'C', 'D', 'E', 'F', 'T']
+    #nodes = ['S', 'A', 'B', 'C', 'D', 'E', 'F', 'T']
     #nodes = ['S', '1', '2', '3', '4', 'T']
+    nodes = ['S', '1', '2', 'T']
 
+    '''
     loc: dict = {'A': [.15, .25, .3, .3], 'B': [.4, .2, .4], 'C': [.2, .3, .4, .1], 'D': [.4, .3, .3],
                     'E': [.5, .5], 'F': [.4, .6],
                     'S': [.3, .5, .2], 'T': [.8, .2]}
-    '''
+    
     
     loc = {'S': [0.33, 0.66], 
            '1': [0.33], 
@@ -130,6 +147,12 @@ def dummy_data():
            '3': [0.33, 0.33], 
            '4': [0.33, 0.33], 
            'T': [0.33, 0.66]}
+    '''
+    loc = {'S': [0.4, 0.6], 
+           '1': [0.3,0.7], 
+           '2': [0.6, 0.2,0.2], 
+           'T': [0.5, 0.5]}
+    
     '''
     loc_links = pd.DataFrame({('A', 'B'): {0: [1, 1, 1], 1: [1, 1, 1], 2: [1, 1, 1], 3: [1, 1, 1]},
                                 ('B', 'C'): {0: [1, 1, 1, 1], 1: [1, 1, 1, 1], 2: [1, 1, 1, 1]},
@@ -141,7 +164,7 @@ def dummy_data():
                                 ('B', 'T'): {0: [1, 0], 1: [0, 0], 2: [0, 0]},
                                 ('F', 'T'): {0: [1, 0], 1: [1, 1]}
                                 })
-    '''
+    
     loc_links = pd.DataFrame({('A', 'B'): {0: [1, 1, 1], 1: [1, 1, 1], 2: [1, 1, 1], 3: [1, 1, 1]},
                                 ('B', 'C'): {0: [1, 1, 1, 1], 1: [1, 1, 1, 1], 2: [1, 1, 1, 1]},
                                 ('C', 'D'): {0: [0, 1, 1], 1: [1, 1, 1], 2: [1, 1, 1], 3: [1, 1, 1]},
@@ -167,6 +190,13 @@ def dummy_data():
         ('4', 'T'): {0: [1,1], 1: [1,1]},
     })
     '''
+    loc_links = pd.DataFrame({
+        ('S', '1'): {0: [1,0], 1: [0,0]},
+        ('S', '2'): {0: [0,0,0], 1: [1,0,1]},
+        ('1', '2'): {0: [0,0,0], 1: [1,0,0]},
+        ('1', 'T'): {0: [1,1], 1: [0,0]},
+        ('2', 'T'): {0: [0,1], 1: [0,0], 2: [1,0]}})
+    '''
     links:dict = {
     'S':['A','E'],
     'A':['B'],
@@ -175,6 +205,11 @@ def dummy_data():
     'D':['T'],
     'E':['F'],
     'F':['T']}
+    '''
+    links:dict = {
+    'S':['1','2'],
+    '1':['2','T'],
+    '2':['T']}
     return nodes, loc, loc_links, links
 
 def input(file_name):
@@ -261,9 +296,11 @@ if __name__ == '__main__':
     loc_set_max = 0
     file_name = ''
     connection_level = 2
-    '''
+    
     if args.test:
         nodes, loc, loc_links, links = dummy_data()
+        paths, exhaustive_id = run_exhaustive(loc=loc,links=links,loc_links=loc_links,nodes=nodes, loc_set_max=loc_set_max, number_cores=7)
+        run_two_terminal(loc=loc,links=links,loc_links=loc_links,exhaustive_paths=paths, exhaustive_id=exhaustive_id, algorithm='MaxFlow')
     elif args.nodes and args.locality:
         number_nodes = int(args.nodes)
         loc_set_max = int(args.locality)
@@ -286,7 +323,7 @@ if __name__ == '__main__':
         paths, exhaustive_id = run_exhaustive(loc=loc,links=links,loc_links=loc_links,nodes=nodes, loc_set_max=loc_set_max, number_cores=number_cores)
         run_two_terminal(loc=loc,links=links,loc_links=loc_links,exhaustive_paths=paths, exhaustive_id=exhaustive_id, algorithm='MaxFlow')
         #run_two_terminal(loc=loc,links=links,loc_links=loc_links,exhaustive_paths=paths, exhaustive_id=exhaustive_id, algorithm='SSSP')
-        
+    '''   
 
         
     
