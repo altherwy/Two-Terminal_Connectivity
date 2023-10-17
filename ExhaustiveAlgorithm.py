@@ -49,6 +49,7 @@ class ExhaustiveAlgorithm:
                 if len(path) > 1:
                     print(path)
                     if not self.isConnected(neighbour_node,node,neighbour_node_loc,i):
+                        path['connected'] = False
                         continue
 
                 path[node] = i
@@ -59,7 +60,7 @@ class ExhaustiveAlgorithm:
                     prob /= node_loc[i]
                 else:
                     
-                    path['probability'] = prob
+                    path['probability'] = round(prob,2)
                     #self.paths = pd.concat([self.paths, pd.DataFrame(path, index=[0])], ignore_index=True)
                     self.paths.append(path.copy())
                     del path[node]
