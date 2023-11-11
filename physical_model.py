@@ -7,6 +7,13 @@ ylim = [0,100]
 def _unpack_two_terminals(row, attr = 'connectivity'):
     temp = row[0]
     return temp[attr]
+
+def set_fonts():
+    # change font to Palatino Linotype with 12 and bold
+    plt.rcParams["font.family"] = "Palatino Linotype"
+    plt.rcParams["font.size"] = "12"
+    plt.rcParams["font.weight"] = "bold"
+
 '''
 ///////////////////////////////////////////
 Start nodes vs. connectivity (MF algorithm)
@@ -174,4 +181,118 @@ df_loc_time
 reponse = sc.supabase.table('exhaustive_algorithms')\
     .select('connectivity , nodes, running_time, two_terminals(connectivity)').execute()
 reponse.data
+# %%
+'''
+////////////////////////////////////////
+data points for nodes, locality sets, and connectivity
+////////////////////////////////////////
+'''
+
+response = sc.supabase.table('exhaustive_algorithms')\
+    .select('connectivity , nodes, locality_sets').eq('is_valid',True).execute()
+df = pd.DataFrame(response.data)
+fig = plt.figure()
+ax = fig.add_subplot(projection='3d')
+ax.scatter(df['nodes'], df['locality_sets'], df['connectivity']*100, c=df['connectivity'])
+ax.set_yticks([2,3,4,5])
+ax.set_xlabel('$V$')
+ax.set_ylabel('$Loc_{max}$')
+ax.set_zlabel('Connectivity (%)')
+set_fonts()
+# make axis label bold
+ax.xaxis.label.set_fontweight('bold')
+ax.yaxis.label.set_fontweight('bold')
+ax.zaxis.label.set_fontweight('bold')
+# remove the grey background
+ax.xaxis.pane.fill = False
+ax.yaxis.pane.fill = False
+ax.zaxis.pane.fill = False
+plt.savefig('figures/nodes_loc_set_conn.png', format='png', bbox_inches=0, dpi=resolution)
+
+'''
+////////////////////////////////////////
+End of data points for nodes, locality sets, and connectivity   
+////////////////////////////////////////
+'''
+# %%
+'''
+////////////////////////////////////////
+data points for nodes, locality sets, and running time
+////////////////////////////////////////
+'''
+
+response = sc.supabase.table('exhaustive_algorithms')\
+    .select('running_time , nodes, locality_sets').eq('is_valid',True).execute()
+df = pd.DataFrame(response.data)
+fig = plt.figure()
+ax = fig.add_subplot(projection='3d')
+# cast df['running_time'] to float
+
+ax.scatter(df['nodes'], df['locality_sets'], df['running_time'].astype(float), c = df['running_time'].astype(float))
+ax.set_yticks([2,3,4,5])
+ax.set_xlabel('$V$')
+ax.set_ylabel('$Loc_{max}$')
+ax.set_zlabel('Running Time (mins)')
+set_fonts()
+# make axis label bold
+ax.xaxis.label.set_fontweight('bold')
+ax.yaxis.label.set_fontweight('bold')
+ax.zaxis.label.set_fontweight('bold')
+# remove the grey background
+ax.xaxis.pane.fill = False
+ax.yaxis.pane.fill = False
+ax.zaxis.pane.fill = False
+plt.savefig('figures/nodes_loc_set_runn.png', format='png', bbox_inches=0, dpi=resolution)
+
+'''
+////////////////////////////////////////
+End of data points for nodes, locality sets, and running time   
+////////////////////////////////////////
+'''
+# %%
+# Specify the table and columns
+table = 'exhaustive_algorithms'
+columns = ['nodes', 'locality_sets', 'count(*)']
+
+# Specify the condition in the WHERE clause
+condition = {'is_valid': True}
+
+# Specify the GROUP BY and ORDER BY clauses
+group_by = ['nodes', 'locality_sets']
+order_by = ['nodes', 'locality_sets']
+
+# Perform the query
+query = f"""
+SELECT nodes, locality_sets, COUNT(*)
+FROM {table}
+WHERE is_valid = TRUE
+GROUP BY nodes, locality_sets
+ORDER BY nodes, locality_sets
+"""
+response = sc.supabase.rpc('sql', {'query': query}).execute()
+
+result_data = response['data']
+df = pd.DataFrame(result_data)
+fig = plt.figure()
+ax = fig.add_subplot(111,projection='3d')
+# cast df['running_time'] to float
+
+ax.stem(df['nodes'], df['locality_sets'], df['count'])
+'''
+ax.set_yticks([2,3,4,5])
+ax.set_xlabel('$V$')
+ax.set_ylabel('$Loc_{max}$')
+ax.set_zlabel('Number of simulations')
+set_fonts()
+# make axis label bold
+ax.xaxis.label.set_fontweight('bold')
+ax.yaxis.label.set_fontweight('bold')
+ax.zaxis.label.set_fontweight('bold')
+# remove the grey background
+ax.xaxis.pane.fill = False
+ax.yaxis.pane.fill = False
+ax.zaxis.pane.fill = False
+plt.savefig('figures/nodes_loc_set_runn.png', format='png', bbox_inches=0, dpi=resolution)
+'''
+plt.show()
 # %%
