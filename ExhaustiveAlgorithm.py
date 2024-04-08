@@ -14,46 +14,69 @@ class ExhaustiveAlgorithm:
         self.nodes = nodes  # the nodes in the graph
         self.loc_links = loc_links  # the links between nodes. For example, for nodes x and y, the format is as follows
         self.links = links # the neighbours of each node
+        '''
         self.columns = self.nodes.copy()
         self.columns.append('prob')
         self.paths = pd.DataFrame(columns=self.columns)
+        '''
+        self.paths = []
         self.ConnectedPathException = type('ConnectedPathException', (Exception,), {})
         self.path_calculated = 0
         self.number_of_paths = self._number_of_paths()
         self.connectivity = 0
     
-    def exhaustive_algorithm(self, node_id: int, path: list, prob: float) -> tuple:
+    def exhaustive_algorithm(self, node_id: int, path: dict, prob: float) -> tuple:
         '''
         This method computes the exact connectivity between two nodes (terminals)
         Args:
             node_id (int): The index of the node in the nodes list
-            path (list): The path from the source to the current node
+            path (dict): The path from the source to the current node
             prob (float): The probability of the path
         Returns:
             paths (pd.DataFrame): The paths from the source to the destination
             prob (float): The probability of the path
         '''
-        node = self.nodes[node_id]
-        node_loc = self.loc[node] # node_loc such as [.3, .5, .2]
-        for i in range(len(node_loc)):
-            path.append(i)
-            prob *= node_loc[i]
-            if node != 'T':
-                path, prob = self.exhaustive_algorithm(node_id+1,path,prob)
-                path.pop()
-                prob /= node_loc[i]
-            else:
-                path_prob = path.copy()
-                path_prob.append(prob)
-                self.paths.loc[len(self.paths)] = path_prob  # type: ignore
-                path.pop()
-                prob /= node_loc[i]
+        while(True):
+            
+            node = self.nodes[node_id]
+            node_loc = self.loc[node] # node_loc such as [.3, .5, .2]
+            if len(path) > 1:
+                neighbour_node = list(path.items())[-1][0]
+                neighbour_node_loc = path[neighbour_node]
 
-                self.path_calculated +=1
-                if self.path_calculated % 500 == 0 and self.path_calculated >= 500:
-                    print("path calculated: ",self.path_calculated)
-                    print("path to calculate: ",self.number_of_paths - self.path_calculated)
-        
+
+            for i in range(len(node_loc)):
+                if len(path) > 1:
+                    print(path)
+                    if not self.isConnected(neighbour_node,node,neighbour_node_loc,i):
+                        path['connected'] = False
+                        continue
+
+                path[node] = i
+                prob *= node_loc[i]
+                if node != 'T':
+                    path, prob = self.exhaustive_algorithm(node_id+1,path,prob)
+                    del path[node]
+                    prob /= node_loc[i]
+                else:
+                    
+                    path['probability'] = round(prob,2)
+                    #self.paths = pd.concat([self.paths, pd.DataFrame(path, index=[0])], ignore_index=True)
+                    self.paths.append(path.copy())
+                    del path[node]
+                    del path['probability']
+                    prob /= node_loc[i]
+                    
+
+                    self.path_calculated +=1
+                    if self.path_calculated % 500 == 0 and self.path_calculated >= 500:
+                        print("path calculated: ",self.path_calculated)
+                        print("path to calculate: ",self.number_of_paths - self.path_calculated)
+            
+            if node == 'T' or len(path) == 0 or not('S' in path):
+                break
+            else:
+                node_id += 1
         return path, prob
     
     
@@ -70,12 +93,18 @@ class ExhaustiveAlgorithm:
                     self.path_isConnected(neighbour,path)
     
     def isConnected(self,node:str,neighbour:str,node_pos:int,neighbour_pos:int):
-
-        connections = self.loc_links[(node,neighbour)]
-        connection = connections[node_pos][neighbour_pos]
-        if connection == 1:
-            return True
-        return False
+        try:
+            connections = self.loc_links[(node,neighbour)]
+            connection = connections[node_pos][neighbour_pos]
+            if connection == 1:
+                return True
+            else:
+                print('here')
+                return False
+        
+        except KeyError:
+            print('here')
+            return False
 
     def _number_of_paths(self):
         number_of_paths = 1
@@ -87,7 +116,9 @@ class ExhaustiveAlgorithm:
 
   
     def main(self):
-        _,_ = self.exhaustive_algorithm(0,[],1)
+        _,_ = self.exhaustive_algorithm(0,{},1)
+        print('--------------- before connected -----------------')
+        '''
         self.paths['Connected'] = False
         for i in range(len(self.paths)):
             path = self.paths.loc[i]
@@ -99,6 +130,8 @@ class ExhaustiveAlgorithm:
             self.paths.loc[i,'Connected'] = False
         self.connectivity = round(self.paths[self.paths['Connected'] == True]['prob'].sum(),2)
         print('Connectivity:',self.connectivity)
+        '''
+        print(self.paths)
 
 
         
@@ -115,13 +148,15 @@ def dummy_data():
         loc (dict): The locality sets of all nodes
         loc_links (pd.DataFrame): The links between nodes
     '''
-    nodes = ['S', 'A', 'B', 'C', 'D', 'E', 'F', 'T']
+    #nodes = ['S', 'A', 'B', 'C', 'D', 'E', 'F', 'T']
     #nodes = ['S', '1', '2', '3', '4', 'T']
+    nodes = ['S', '1', '2', 'T']
 
+    '''
     loc: dict = {'A': [.15, .25, .3, .3], 'B': [.4, .2, .4], 'C': [.2, .3, .4, .1], 'D': [.4, .3, .3],
                     'E': [.5, .5], 'F': [.4, .6],
                     'S': [.3, .5, .2], 'T': [.8, .2]}
-    '''
+    
     
     loc = {'S': [0.33, 0.66], 
            '1': [0.33], 
@@ -129,6 +164,12 @@ def dummy_data():
            '3': [0.33, 0.33], 
            '4': [0.33, 0.33], 
            'T': [0.33, 0.66]}
+    '''
+    loc = {'S': [0.4, 0.6], 
+           '1': [0.3,0.7], 
+           '2': [0.6, 0.2,0.2], 
+           'T': [0.5, 0.5]}
+    
     '''
     loc_links = pd.DataFrame({('A', 'B'): {0: [1, 1, 1], 1: [1, 1, 1], 2: [1, 1, 1], 3: [1, 1, 1]},
                                 ('B', 'C'): {0: [1, 1, 1, 1], 1: [1, 1, 1, 1], 2: [1, 1, 1, 1]},
@@ -140,7 +181,7 @@ def dummy_data():
                                 ('B', 'T'): {0: [1, 0], 1: [0, 0], 2: [0, 0]},
                                 ('F', 'T'): {0: [1, 0], 1: [1, 1]}
                                 })
-    '''
+    
     loc_links = pd.DataFrame({('A', 'B'): {0: [1, 1, 1], 1: [1, 1, 1], 2: [1, 1, 1], 3: [1, 1, 1]},
                                 ('B', 'C'): {0: [1, 1, 1, 1], 1: [1, 1, 1, 1], 2: [1, 1, 1, 1]},
                                 ('C', 'D'): {0: [0, 1, 1], 1: [1, 1, 1], 2: [1, 1, 1], 3: [1, 1, 1]},
@@ -166,6 +207,13 @@ def dummy_data():
         ('4', 'T'): {0: [1,1], 1: [1,1]},
     })
     '''
+    loc_links = pd.DataFrame({
+        ('S', '1'): {0: [1,0], 1: [0,0]},
+        ('S', '2'): {0: [0,0,0], 1: [1,0,1]},
+        ('1', '2'): {0: [0,0,0], 1: [1,0,0]},
+        ('1', 'T'): {0: [1,1], 1: [0,0]},
+        ('2', 'T'): {0: [0,1], 1: [0,0], 2: [1,0]}})
+    '''
     links:dict = {
     'S':['A','E'],
     'A':['B'],
@@ -174,6 +222,11 @@ def dummy_data():
     'D':['T'],
     'E':['F'],
     'F':['T']}
+    '''
+    links:dict = {
+    'S':['1','2'],
+    '1':['2','T'],
+    '2':['T']}
     return nodes, loc, loc_links, links
 
 def input(file_name):
@@ -212,6 +265,7 @@ def run_exhaustive(loc,links,loc_links,nodes, loc_set_max, number_cores):
     ea = ExhaustiveAlgorithm(nodes=nodes,loc=loc,loc_links=loc_links, links=links)
     print("number of paths is: ",ea.number_of_paths)
     ea.main()
+    '''
     running_time = (round((time.time() - start_time)/60,2))
     print("--- total running time  %s minutes ---" % running_time)
 
@@ -222,6 +276,8 @@ def run_exhaustive(loc,links,loc_links,nodes, loc_set_max, number_cores):
                                 running_time).eq("connectivity",ea.connectivity).eq("number_cores",number_cores).execute()
     exhaustive_id = reponse.data[0]['id']
     return ea.paths, exhaustive_id
+    '''
+    return ea.paths,0
 
 def run_two_terminal(loc,links,loc_links,exhaustive_paths, exhaustive_id, algorithm):
     start_time = time.time()
@@ -260,9 +316,11 @@ if __name__ == '__main__':
     loc_set_max = 0
     file_name = ''
     connection_level = 2
-    '''
+    
     if args.test:
         nodes, loc, loc_links, links = dummy_data()
+        paths, exhaustive_id = run_exhaustive(loc=loc,links=links,loc_links=loc_links,nodes=nodes, loc_set_max=loc_set_max, number_cores=7)
+        #run_two_terminal(loc=loc,links=links,loc_links=loc_links,exhaustive_paths=paths, exhaustive_id=exhaustive_id, algorithm='MaxFlow')
     elif args.nodes and args.locality:
         number_nodes = int(args.nodes)
         loc_set_max = int(args.locality)
@@ -285,7 +343,7 @@ if __name__ == '__main__':
         paths, exhaustive_id = run_exhaustive(loc=loc,links=links,loc_links=loc_links,nodes=nodes, loc_set_max=loc_set_max, number_cores=number_cores)
         run_two_terminal(loc=loc,links=links,loc_links=loc_links,exhaustive_paths=paths, exhaustive_id=exhaustive_id, algorithm='MaxFlow')
         #run_two_terminal(loc=loc,links=links,loc_links=loc_links,exhaustive_paths=paths, exhaustive_id=exhaustive_id, algorithm='SSSP')
-        
+    '''   
 
         
     

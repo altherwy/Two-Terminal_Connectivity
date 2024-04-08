@@ -2,3 +2,5 @@ node_data/
 loc_links_data/
 loc_data/
 links_data/
+MDPI Article Template/
+*.pyc
