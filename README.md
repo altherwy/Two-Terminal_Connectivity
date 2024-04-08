@@ -42,3 +42,18 @@ The Two-Terminal connectivity algorithm computes the connectivity between two no
                             ('S','D'): {0:[1,1], 1:[1,1]},
                             ('E','T'): {0:[1,1,1]},
                             })
+                    
+
+# To DO
+ -  Generate DPaths using loc, links, nodes .. files (&#9989;)
+ -  Generate paths as DataFrame for all DPaths (&#9874;)
+ -  Check the connectivity of each DPath (&#9874;)
+ -  Run the TwoTerminal algorithm (&#9874;)
+    - Epoch2020: Nodes = 36, Loc_max = 2, Conn_level = 1
+    - Epoch2020: Nodes = 36, Loc_max = 2, Conn_level = 2
+    - Epoch2020: Nodes = 36, Loc_max = 2, Conn_level = 3
+    - Epoch2020: Nodes = 36, Loc_max = 3, Conn_level = 1
+    - Epoch2020: Nodes = 36, Loc_max = 3, Conn_level = 2
+    - Epoch2020: Nodes = 36, Loc_max = 3, Conn_level = 3 
+##
+- Epcoh2020: Ehab 2020 paper, they have 36 nodes, 2 and 3 loc_max, and 3 different connection levels
