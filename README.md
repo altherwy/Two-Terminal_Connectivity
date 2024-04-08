@@ -57,3 +57,5 @@ The Two-Terminal connectivity algorithm computes the connectivity between two no
     - Epoch2020: Nodes = 36, Loc_max = 3, Conn_level = 3 
 ##
 - Epcoh2020: Ehab 2020 paper, they have 36 nodes, 2 and 3 loc_max, and 3 different connection levels
+- Epoch2014: Islam 2013 papaer, they have 20 nodes max, 8 loc_max , and connevetivty levels range from 3.5 to 6.5
+- Epoch2018: need the paper (&#9874;)
