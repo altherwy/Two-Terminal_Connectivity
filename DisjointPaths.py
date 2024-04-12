@@ -69,7 +69,7 @@ class DisjointPaths:
             None
         
         Returns:
-            The Disjoint paths as a 2D array of letters (e.g., [S,A,T],[S,C,D,T])
+            The Disjoint paths as a 2D array of letters (e.g., [[S,A,T],[S,C,D,T]])
         '''
         
         graph,indexesValues = self.mainBuildGraph()
