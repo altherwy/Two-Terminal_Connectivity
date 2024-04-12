@@ -13,8 +13,10 @@ class TwoTerminal:
         self.loc_links = loc_links  # the links between nodes. For example, for nodes x and y, the format is as follows
         self.dis_paths = dis_p.DisjointPaths(links)# type: ignore
         self.dps = self.dis_paths.runMaxFlow() if algorithm == 'MaxFlow' else self.dis_paths.runSSSP() 
+
         self.df_paths = paths[paths['Connected'] == True].copy()
         self.df_paths['prob'] = [1] * len(self.df_paths) # reset the probability to 1
+        
         self.ConnectedPathException = type('ConnectedPathException', (Exception,), {})
         self.NotConnectedPathException = type('NotConnectedPathException', (Exception,), {})
         self.two_terminal_data = {}

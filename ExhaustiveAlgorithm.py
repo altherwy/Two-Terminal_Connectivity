@@ -46,7 +46,7 @@ class ExhaustiveAlgorithm:
 
 
             for i in range(len(node_loc)):
-                if len(path) > 1:
+                if len(path) > 2:
                     print(path)
                     if not self.isConnected(neighbour_node,node,neighbour_node_loc,i):
                         path['connected'] = False
@@ -118,10 +118,11 @@ class ExhaustiveAlgorithm:
     def main(self):
         _,_ = self.exhaustive_algorithm(0,{},1)
         print('--------------- before connected -----------------')
-        '''
+        self.paths = pd.DataFrame(self.paths)
         self.paths['Connected'] = False
         for i in range(len(self.paths)):
             path = self.paths.loc[i]
+            print(path)
             try:
                 self.path_isConnected('S',path)
             except self.ConnectedPathException as e:
@@ -130,7 +131,7 @@ class ExhaustiveAlgorithm:
             self.paths.loc[i,'Connected'] = False
         self.connectivity = round(self.paths[self.paths['Connected'] == True]['prob'].sum(),2)
         print('Connectivity:',self.connectivity)
-        '''
+        
         print(self.paths)
 
 
@@ -316,7 +317,7 @@ if __name__ == '__main__':
     loc_set_max = 0
     file_name = ''
     connection_level = 2
-    
+    '''
     if args.test:
         nodes, loc, loc_links, links = dummy_data()
         paths, exhaustive_id = run_exhaustive(loc=loc,links=links,loc_links=loc_links,nodes=nodes, loc_set_max=loc_set_max, number_cores=7)
@@ -341,9 +342,16 @@ if __name__ == '__main__':
         file_name, number_cores = run_physical_model(number_of_nodes= number_nodes,loc_set_max=loc_set_max, conn_level=connection_level)
         loc,links,loc_links,nodes =  input(file_name)
         paths, exhaustive_id = run_exhaustive(loc=loc,links=links,loc_links=loc_links,nodes=nodes, loc_set_max=loc_set_max, number_cores=number_cores)
+
+        # paths to csv
+        df = pd.DataFrame(paths)
+        df.to_csv('exhaustive_paths.csv',index=False)
+        
+        '''
         run_two_terminal(loc=loc,links=links,loc_links=loc_links,exhaustive_paths=paths, exhaustive_id=exhaustive_id, algorithm='MaxFlow')
         #run_two_terminal(loc=loc,links=links,loc_links=loc_links,exhaustive_paths=paths, exhaustive_id=exhaustive_id, algorithm='SSSP')
-    '''   
+        '''
+    
 
         
     
