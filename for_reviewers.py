@@ -28,34 +28,17 @@ class ConnectivityAnalyzer:
     
 
 
-    '''
-    def genrate_all_paths(self):
-        for dp in self.disjoint_paths:
-         list_probs:list = self.loc[dp[0]] # get the probabilities of the locations of node S
-         for i in range(len(list_probs)):
-            prob = list_probs[i]
-            path = {'S':i}
-            self._generate_path(dp -> list,node_index = 0 -> int,loc_index = i -> int, prob = prob -> float, path =path -> dict)   
-                
-    def _generate_path(self,dp,index,prob,path):
-        list_probs:list = self.loc[dp[index]] # get the probabilities of the locations of the current node
-        prob *=  
-        if dp[index] == 'T':
-            
-            
-        paths = []
-        for location, location_prob in self.loc[dp[index]].items():
-            if location not in dp:
-                new_path = dp + [location]
-                new_prob = prob * location_prob
-                paths += self._generate_path(dp,location, new_prob,new_path)
-        return paths
-
-    '''      
-            
+    
     
 
 if __name__ == "__main__":
     analyzer = ConnectivityAnalyzer('experiment_list.csv')
+    print(analyzer.disjoint_paths)
+    print('-----------------')
+    print(analyzer.loc)
+    print('-----------------')
+    print(analyzer.loc_links)
+    print('-----------------')
+    print(analyzer.nodes)
 
 
