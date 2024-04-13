@@ -7,7 +7,7 @@ from numpy import prod
 class ConnectivityAnalyzer:
     def __init__(self, experiment_list_file):
         self.experiment_list_file = experiment_list_file
-        self.disjoint_paths, self.loc, self.loc_links, self.loc_links, self.nodes = self._preprocessing()
+        self.disjoint_paths, self.loc, self.loc_links, self.loc_links, self.nodes, self.file_name = self._preprocessing()
         self.all_paths = pd.DataFrame()
         
 
@@ -21,7 +21,7 @@ class ConnectivityAnalyzer:
             file_name, number_cores = run_physical_model(number_of_nodes=number_nodes, loc_set_max=loc_set_max, conn_level=connection_level)
             loc, links, loc_links, nodes = input(file_name)
             disjoint_paths = self._get_disjoint_paths(links)
-            return disjoint_paths, loc, loc_links, loc_links, nodes
+            return disjoint_paths, loc, loc_links, loc_links, nodes, file_name
     
     def _get_disjoint_paths(self, links):
         dis_paths = dis_p.DisjointPaths(links)
@@ -103,6 +103,7 @@ if __name__ == "__main__":
         prod_paths = analyzer.multiply_probabilities(paths,dp)
         processed_paths = analyzer.connected_paths(prod_paths, dp)
         analyzer.all_paths = pd.concat([analyzer.all_paths, processed_paths])
+        analyzer.all_paths.to_csv('.csv', index=False)
         
 
    

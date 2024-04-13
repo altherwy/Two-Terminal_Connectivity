@@ -2,22 +2,18 @@
 from ExhaustiveAlgorithm import input
 import pandas as pd
 import DisjointPaths as dis_p
+from numpy import prod
 # %%
 file_name = '20240414000415'
 loc, links, loc_links, nodes = input(file_name)
-disjoint_paths = [['S', '1', 'T']]
+
+def _get_disjoint_paths(links):
+        dis_paths = dis_p.DisjointPaths(links)
+        dps = dis_paths.runMaxFlow()
+        return dps
+
+disjoint_paths = _get_disjoint_paths(links)
 # %%
-'''
-for dp in disjoint_paths:
-    paths = generate_paths(dp)
-    multiply_pths = multiply_probabilities(paths,dp)
-    
-'''
-def print_(node, neighbour, node_pos, neighbour_pos):
-    print(node, neighbour, node_pos, neighbour_pos)
-    print(isConnected(node,neighbour,node_pos,neighbour_pos))
-# %%
-from numpy import prod
 def generate_paths(dp)->list:
     nodes = dp
     num_nodes = len(nodes)
@@ -55,15 +51,6 @@ def isConnected(node:str,neighbour:str,node_pos:int,neighbour_pos:int):
             return True
         return False
 
-def _get_disjoint_paths( loc, links, loc_links, nodes):
-        dis_paths = dis_p.DisjointPaths(links)
-        dps = dis_paths.runMaxFlow()
-        return dps
-
-pths = generate_paths(disjoint_paths[0])
-multiply_pths = multiply_probabilities(pths,disjoint_paths[0])
-# call connected_paths
-# %%
 def connected_paths(paths, dp):
     paths['Connected'] = 'Not Processed'
     for i in range(len(paths)):
@@ -93,12 +80,23 @@ def _flag_paths(paths, node, neighbour, node_pos, neighbour_pos, flag):
     paths.loc[(paths[node] == node_pos) & (paths[neighbour] == neighbour_pos), 'Connected'] = flag
     return paths
 # %% 
+all_paths = pd.DataFrame()
+for dp in disjoint_paths:
+    paths = generate_paths(dp)
+    prod_paths = multiply_probabilities(paths,dp)
+    processed_paths = connected_paths(prod_paths, dp)
+    all_paths = pd.concat([all_paths, processed_paths])
 
-pt = connected_paths(multiply_pths, disjoint_paths[0])
-# %%
 # %%
 print(loc_links[('S','1')][0][0])
 print(loc_links[('1','T')][0][0])
 # %%
-pt
+all_paths
+# %%
+processed_paths
+# %%
+loc
+# %% export all_paths to csv
+all_paths.to_csv('results/all_paths.csv', index=False)
+
 # %%
