@@ -16,7 +16,6 @@ def print_(node, neighbour, node_pos, neighbour_pos):
     print(node, neighbour, node_pos, neighbour_pos)
     print(isConnected(node,neighbour,node_pos,neighbour_pos))
 # %%
-from itertools import product
 from numpy import prod
 def generate_paths(dp)->list:
     nodes = dp
@@ -80,10 +79,10 @@ def _is_path_connected(path,dp, paths):
         neighbour_pos = path[neighbour].values[0]
         if not isConnected(node,neighbour,node_pos,neighbour_pos):
             paths = _flag_paths(paths, node, neighbour, node_pos, neighbour_pos, False)
-            #print_(node, neighbour, node_pos, neighbour_pos)
+    
             return paths
     return paths
-    #return _flag_paths(paths, node, neighbour, node_pos, neighbour_pos, True)
+    
 
 def _flag_paths(paths, node, neighbour, node_pos, neighbour_pos, flag):
     paths.loc[(paths[node] == node_pos) & (paths[neighbour] == neighbour_pos), 'Connected'] = flag
