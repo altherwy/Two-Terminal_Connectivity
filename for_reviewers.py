@@ -20,10 +20,10 @@ class ConnectivityAnalyzer:
 
             file_name, number_cores = run_physical_model(number_of_nodes=number_nodes, loc_set_max=loc_set_max, conn_level=connection_level)
             loc, links, loc_links, nodes = input(file_name)
-            disjoint_paths = self._get_disjoint_paths(loc, links, loc_links, nodes)
+            disjoint_paths = self._get_disjoint_paths(links)
             return disjoint_paths, loc, loc_links, loc_links, nodes
     
-    def _get_disjoint_paths(self, loc, links, loc_links, nodes):
+    def _get_disjoint_paths(self, links):
         dis_paths = dis_p.DisjointPaths(links)
         dps = dis_paths.runMaxFlow()
         return dps
@@ -93,12 +93,7 @@ class ConnectivityAnalyzer:
 
     def _flag_paths(self, paths, node, neighbour, node_pos, neighbour_pos, flag):
         paths.loc[(paths[node] == node_pos) & (paths[neighbour] == neighbour_pos), 'Connected'] = flag
-        return paths
-    
-    def compute_connectivity(self, paths):
-
-
-        
+        return paths    
     
 
 if __name__ == "__main__":
@@ -107,7 +102,7 @@ if __name__ == "__main__":
         paths = analyzer.generate_paths(dp)
         prod_paths = analyzer.multiply_probabilities(paths,dp)
         processed_paths = analyzer.connected_paths(prod_paths, dp)
-        all_paths = pd.concat([all_paths, processed_paths])
+        analyzer.all_paths = pd.concat([analyzer.all_paths, processed_paths])
         
 
    

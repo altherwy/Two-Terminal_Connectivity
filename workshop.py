@@ -1,8 +1,9 @@
 #%%
 from ExhaustiveAlgorithm import input
 import pandas as pd
+import DisjointPaths as dis_p
 # %%
-file_name = '20240412120240'
+file_name = '20240414000415'
 loc, links, loc_links, nodes = input(file_name)
 disjoint_paths = [['S', '1', 'T']]
 # %%
@@ -53,7 +54,11 @@ def isConnected(node:str,neighbour:str,node_pos:int,neighbour_pos:int):
         if connection == 1:
             return True
         return False
-#%%
+
+def _get_disjoint_paths( loc, links, loc_links, nodes):
+        dis_paths = dis_p.DisjointPaths(links)
+        dps = dis_paths.runMaxFlow()
+        return dps
 
 pths = generate_paths(disjoint_paths[0])
 multiply_pths = multiply_probabilities(pths,disjoint_paths[0])
