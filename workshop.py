@@ -4,7 +4,7 @@ import pandas as pd
 import DisjointPaths as dis_p
 from numpy import prod
 # %%
-file_name = '20240414000415'
+file_name = '20240414003237'
 loc, links, loc_links, nodes = input(file_name)
 
 def _get_disjoint_paths(links):
@@ -88,16 +88,30 @@ for dp in disjoint_paths:
     all_paths = pd.concat([all_paths, processed_paths])
 
 # %%
-print(loc_links[('S','1')][0][0])
-print(loc_links[('1','T')][0][0])
+print(loc_links[('S','36')][2][1])
+print(loc_links[('36','38')][1][2])
+print(loc_links[('38','T')][2][2])
+
+# %% import all_paths from csv
+file_name = 'results/20240414003237.csv'
+df = pd.read_csv(file_name)
+df
+
+# %% return Connected true paths
+df_paths = df[df['Connected'] == True]
+df_paths
+
+# %% 37 not None
+
+df2 = df[(df['36'].notnull()) & (df['38'].notnull()) & (df['Connected'] == True)]
 # %%
-all_paths
+print(loc['S'])
+print(loc['36'])
+print(loc['38'])
+print(loc['T'])
 # %%
-processed_paths
-# %%
-loc
-# %% export all_paths to csv
-file_name = '09009'
-all_paths.to_csv('results/'+file_name + '.csv', index=False)
+3*3*3*3
+# %% show only S, T, 36, 38
+df2[['S','36','38','T','prob']]
 
 # %%
