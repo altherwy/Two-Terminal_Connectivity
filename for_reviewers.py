@@ -98,13 +98,19 @@ class ConnectivityAnalyzer:
 
 if __name__ == "__main__":
     analyzer = ConnectivityAnalyzer('experiment_list.csv')
+    # start timer
+    import time
+    start = time.time()
+
     for dp in analyzer.disjoint_paths:
         paths = analyzer.generate_paths(dp)
         prod_paths = analyzer.multiply_probabilities(paths,dp)
         processed_paths = analyzer.connected_paths(prod_paths, dp)
         analyzer.all_paths = pd.concat([analyzer.all_paths, processed_paths])
-        analyzer.all_paths.to_csv('.csv', index=False)
-        
+        analyzer.all_paths.to_csv('results/'+analyzer.file_name + '.csv', index=False)
+
+    end = time.time()
+    print('Time taken:', end-start)    
 
    
 

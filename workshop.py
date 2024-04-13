@@ -97,6 +97,7 @@ processed_paths
 # %%
 loc
 # %% export all_paths to csv
-all_paths.to_csv('results/all_paths.csv', index=False)
+file_name = '09009'
+all_paths.to_csv('results/'+file_name + '.csv', index=False)
 
 # %%
