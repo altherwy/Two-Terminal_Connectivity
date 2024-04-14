@@ -5,20 +5,19 @@ import DisjointPaths as dis_p
 from numpy import prod
 
 class ConnectivityAnalyzer:
-    def __init__(self, experiment_list_file):
-        self.experiment_list_file = experiment_list_file
+    def __init__(self, number_nodes:int, loc_set_max:int, connection_level:int):
+        self.number_nodes = number_nodes
+        self.loc_set_max = loc_set_max
+        self.connection_level = connection_level
+
         self.disjoint_paths, self.loc, self.loc_links, self.loc_links, self.nodes, self.file_name = self._preprocessing()
         self.all_paths = pd.DataFrame()
         
 
     def _preprocessing(self):
-        df_experiment_list = pd.read_csv(self.experiment_list_file)
-        for i in range(len(df_experiment_list)):
-            number_nodes = int(df_experiment_list.iloc[i]['number_nodes'])
-            loc_set_max = int(df_experiment_list.iloc[i]['loc_set_max'])
-            connection_level = int(df_experiment_list.iloc[i]['connection_level'])
+        
 
-            file_name, number_cores = run_physical_model(number_of_nodes=number_nodes, loc_set_max=loc_set_max, conn_level=connection_level)
+            file_name, number_cores = run_physical_model(number_of_nodes=self.number_nodes, loc_set_max=self.loc_set_max, conn_level=self.connection_level)
             loc, links, loc_links, nodes = input(file_name)
             disjoint_paths = self._get_disjoint_paths(links)
             return disjoint_paths, loc, loc_links, loc_links, nodes, file_name
@@ -47,7 +46,10 @@ class ConnectivityAnalyzer:
 
 
     def multiply_probabilities(self,paths, dp):
+        
         num_paths = len(paths)
+        dp.remove('S')
+        dp.remove('T')
         for i in range(num_paths):
             prob = 1
             path = paths.iloc[[i]]
@@ -93,15 +95,47 @@ class ConnectivityAnalyzer:
 
     def _flag_paths(self, paths, node, neighbour, node_pos, neighbour_pos, flag):
         paths.loc[(paths[node] == node_pos) & (paths[neighbour] == neighbour_pos), 'Connected'] = flag
-        return paths    
+        return paths  
+
+    def _get_df_for_dp(self,dp):
+        dp.append('prob')
+        df_connected = self.all_paths[self.all_paths['Connected'] == True]
+        dp_df = df_connected[df_connected.columns.intersection(dp)]
+        return dp_df[dp_df.notnull().all(axis=1)] # remove rows with NaN values
+        
+    def get_connectivity(self):
+        '''
+        Computes the connectivity between two nodes (terminals) on a node disjoint path graph
+        Args:
+            None
+        Returns:
+            conn (float): the connectivity between two nodes (terminals) on a node disjoint path graph
+        '''
+        
+        conn = 0
+        for i in range(len(self.loc['S'])):
+            s_prob = self.loc['S'][i]
+            for j in range(len(self.loc['T'])):
+                j_prob = self.loc['T'][j]
+                temp = 1
+                for dp in self.disjoint_paths:
+                    connected_df = self._get_df_for_dp(dp)
+                    connected_df = connected_df[(connected_df['S'] == i) & (connected_df['T'] == j)]
+                    sum_prob = connected_df['prob'].sum()
+                    temp *= 1 - sum_prob
+
+                conn += s_prob*j_prob*(1-temp)
+                
+        return conn
     
 
-if __name__ == "__main__":
-    analyzer = ConnectivityAnalyzer('experiment_list.csv')
+def main():
+    analyzer = ConnectivityAnalyzer(number_nodes, loc_set_max, connection_level)
     # start timer
     import time
     start = time.time()
 
+    
     for dp in analyzer.disjoint_paths:
         paths = analyzer.generate_paths(dp)
         prod_paths = analyzer.multiply_probabilities(paths,dp)
@@ -109,8 +143,24 @@ if __name__ == "__main__":
         analyzer.all_paths = pd.concat([analyzer.all_paths, processed_paths])
         analyzer.all_paths.to_csv('results/'+analyzer.file_name + '.csv', index=False)
 
+    conn = analyzer.get_connectivity()
     end = time.time()
-    print('Time taken:', end-start)    
+    time_taken = end-start
+    print('Time taken:', time_taken)   
+    return number_nodes, loc_set_max, connection_level, conn, time_taken
+
+if __name__ == "__main__":
+
+    df_experiment_list = pd.read_csv('experiment_list.csv')
+    df_results = pd.DataFrame(columns=['V','Loc_max','Conn_Level','Connectivity','Running Time'])
+    for i in range(len(df_experiment_list)):
+        number_nodes = int(df_experiment_list.iloc[i]['number_nodes'])
+        loc_set_max = int(df_experiment_list.iloc[i]['loc_set_max'])
+        connection_level = int(df_experiment_list.iloc[i]['connection_level'])
+        v,loc_max,conn_level,conn, runn_time =  main()
+        #df_results = df_results.append({'V':v,'Loc_max':loc_max,'Conn_Level':conn_level,'Connectivity':conn,'Running Time':runn_time},ignore_index=True)
+
+     
 
    
 

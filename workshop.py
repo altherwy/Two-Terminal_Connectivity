@@ -4,7 +4,7 @@ import pandas as pd
 import DisjointPaths as dis_p
 from numpy import prod
 # %%
-file_name = '20240414003237'
+file_name = '20240414170600'
 loc, links, loc_links, nodes = input(file_name)
 
 def _get_disjoint_paths(links):
@@ -37,6 +37,8 @@ def multiply_probabilities(paths, dp):
     for i in range(num_paths):
         prob = 1
         path = paths.iloc[[i]]
+        dp.remove('S')
+        dp.remove('T')
         for node in dp:
             loc_index = path[node].values[0]
             prob *= loc[node][loc_index]
@@ -86,32 +88,77 @@ for dp in disjoint_paths:
     prod_paths = multiply_probabilities(paths,dp)
     processed_paths = connected_paths(prod_paths, dp)
     all_paths = pd.concat([all_paths, processed_paths])
+    all_paths.to_csv('results/'+file_name + '.csv', index=False)
 
+
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% DONE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # %%
-print(loc_links[('S','36')][2][1])
-print(loc_links[('36','38')][1][2])
-print(loc_links[('38','T')][2][2])
+print(loc_links[('S','21')][1][0])
+print(loc_links[('21','30')][0][1])
+print(loc_links[('30','T')][1][1])
 
 # %% import all_paths from csv
-file_name = 'results/20240414003237.csv'
+file_name = 'results/20240414170600.csv'
 df = pd.read_csv(file_name)
-df
 
 # %% return Connected true paths
-df_paths = df[df['Connected'] == True]
-df_paths
+def get_connectivity(paths):
+        '''
+        Computes the connectivity between two nodes (terminals) on a node disjoint path graph
+        Args:
+            None
+        Returns:
+            conn (float): the connectivity between two nodes (terminals) on a node disjoint path graph
+        '''
+        
+        conn = 0
+        for i in range(len(loc['S'])):
+            s_prob = loc['S'][i]
+            for j in range(len(loc['T'])):
+                j_prob = loc['T'][j]
+                temp = 1
+                for dp in disjoint_paths:
+                    connected_df = get_df_for_dp(paths,dp)
+                    connected_df = connected_df[(connected_df['S'] == i) & (connected_df['T'] == j)]
+                    sum_prob = connected_df['prob'].sum()
+                    temp *= 1 - sum_prob
+                
 
-# %% 37 not None
-
-df2 = df[(df['36'].notnull()) & (df['38'].notnull()) & (df['Connected'] == True)]
+                conn += s_prob*j_prob*(1-temp)
+                
+        return conn
 # %%
-print(loc['S'])
-print(loc['36'])
-print(loc['38'])
-print(loc['T'])
-# %%
-3*3*3*3
-# %% show only S, T, 36, 38
-df2[['S','36','38','T','prob']]
+get_connectivity(df)
+# %% get df for dp 
+def get_df_for_dp(df,dp):
+    dp.append('prob')
+    df_connected = df[df['Connected'] == True]
+    dp_df = df_connected[df_connected.columns.intersection(dp)]
+    df_ = dp_df[dp_df.notnull().all(axis=1)]
+    return df_
 
+
+
+# %%
+loc
+# %%
+df[df['Connected'] == False]
+# %%
+count = 0
+for i in range(len(loc['S'])):
+    for j in range(len(loc['T'])):
+        count += df[(df['S'] == 0) & (df['T'] == 0) & (df['Connected'] == False)]['prob'].sum()
+
+count
+# %% df change all connected to False
+df['Connected'] = False
+# change first path to connected
+df.loc[0,'Connected'] = True
+df
+
+# %%
+.51 * .28 * 0.1050
+# %%
+pd.concat([df,])
 # %%
