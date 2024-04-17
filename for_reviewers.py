@@ -3,6 +3,7 @@ from ExhaustiveAlgorithm import input
 from ExhaustiveAlgorithm import run_physical_model
 import DisjointPaths as dis_p
 from numpy import prod
+from datetime import datetime
 
 class ConnectivityAnalyzer:
     def __init__(self, number_nodes:int, loc_set_max:int, connection_level:int):
@@ -48,14 +49,13 @@ class ConnectivityAnalyzer:
     def multiply_probabilities(self,paths, dp):
         
         num_paths = len(paths)
-        dp.remove('S')
-        dp.remove('T')
         for i in range(num_paths):
             prob = 1
             path = paths.iloc[[i]]
             for node in dp:
-                loc_index = path[node].values[0]
-                prob *= self.loc[node][loc_index]
+                if node != 'S' and node != 'T':
+                    loc_index = path[node].values[0]
+                    prob *= self.loc[node][loc_index]
 
             paths.loc[i,'prob'] = prob
         return paths
@@ -98,9 +98,8 @@ class ConnectivityAnalyzer:
         return paths  
 
     def _get_df_for_dp(self,dp):
-        dp.append('prob')
         df_connected = self.all_paths[self.all_paths['Connected'] == True]
-        dp_df = df_connected[df_connected.columns.intersection(dp)]
+        dp_df = df_connected[df_connected.columns.intersection(dp+['prob'])]
         return dp_df[dp_df.notnull().all(axis=1)] # remove rows with NaN values
         
     def get_connectivity(self):
@@ -130,6 +129,7 @@ class ConnectivityAnalyzer:
     
 
 def main():
+    # run the physical model and get the disjoint paths
     analyzer = ConnectivityAnalyzer(number_nodes, loc_set_max, connection_level)
     # start timer
     import time
@@ -137,15 +137,17 @@ def main():
 
     
     for dp in analyzer.disjoint_paths:
-        paths = analyzer.generate_paths(dp)
-        prod_paths = analyzer.multiply_probabilities(paths,dp)
-        processed_paths = analyzer.connected_paths(prod_paths, dp)
-        analyzer.all_paths = pd.concat([analyzer.all_paths, processed_paths])
-        analyzer.all_paths.to_csv('results/'+analyzer.file_name + '.csv', index=False)
+        paths = analyzer.generate_paths(dp) # generate all possible paths
+        prod_paths = analyzer.multiply_probabilities(paths,dp) # multiply probabilities
+        processed_paths = analyzer.connected_paths(prod_paths, dp) # get connected paths
+        analyzer.all_paths = pd.concat([analyzer.all_paths, processed_paths]) # append to all paths
+        
+    analyzer.all_paths.to_csv('results/'+analyzer.file_name + '.csv', index=False)
 
     conn = analyzer.get_connectivity()
     end = time.time()
     time_taken = end-start
+    print(analyzer.disjoint_paths)
     print('Time taken:', time_taken)   
     return number_nodes, loc_set_max, connection_level, conn, time_taken
 
@@ -158,7 +160,13 @@ if __name__ == "__main__":
         loc_set_max = int(df_experiment_list.iloc[i]['loc_set_max'])
         connection_level = int(df_experiment_list.iloc[i]['connection_level'])
         v,loc_max,conn_level,conn, runn_time =  main()
-        #df_results = df_results.append({'V':v,'Loc_max':loc_max,'Conn_Level':conn_level,'Connectivity':conn,'Running Time':runn_time},ignore_index=True)
+        ser = pd.Series([v,loc_max,conn_level,conn,runn_time],index=df_results.columns)
+        df_results = pd.concat([df_results,ser.to_frame().T],axis=0)
+    
+    dt = datetime.now()
+    ts = datetime.strftime(dt,'%Y%m%d%H%M%S')
+    file_name  = 'results/results_'+ts+'.csv'
+    df_results.to_csv(file_name,index=False)
 
      
 

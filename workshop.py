@@ -157,8 +157,16 @@ df['Connected'] = False
 df.loc[0,'Connected'] = True
 df
 
+
 # %%
-.51 * .28 * 0.1050
+df_results = pd.DataFrame(columns=['V','Loc_max','Conn_Level','Connectivity','Running Time'])
 # %%
-pd.concat([df,])
+df_results
+# %%
+ser = pd.Series([1,2,3,4,5], index = df_results.columns)
+# %%
+ser
+# %%
+df_results = pd.concat([df_results,ser.to_frame().T],axis=0)
+df_results
 # %%
