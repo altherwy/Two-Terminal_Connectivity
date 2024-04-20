@@ -49,7 +49,7 @@ The Two-Terminal connectivity algorithm computes the connectivity between two no
  -  Generate paths as DataFrame for all DPaths (&#9989;)
  -  Check the connectivity of each DPath (&#9989;)
  # Experiments
- -  MSCW vs. 2Nodes connectivity (Category: Effect of increasing node transmission radius)  (&#9874;)
+ -  MSCW vs. 2Nodes connectivity (Category: Effect of increasing node transmission radius)  (&#9989;)
     
     | V  | L | Conn Level | Running Time (sec) MSCW | Running Time (sec) (2Nodes) | Connectivity (2Nodes) |
     | -- | - | ---------- | ----------------------- | --------------------------- | --------------------- |
