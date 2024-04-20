@@ -51,12 +51,12 @@ The Two-Terminal connectivity algorithm computes the connectivity between two no
  # Experiments
  -  MSCW vs. 2Nodes connectivity (Category: Effect of increasing node transmission radius)  (&#9874;)
     
-    | V  | L | Conn Level | Running Time (sec) MSCW | Running Time (sec) (2Nodes connectivity) |
-    | -- | - | ---------- | ----------------------- | ---------------------------------------- |
-    | 36 | 2 | 1          | 83.546                  | N/A                                      |
-    | 36 | 2 | 2          | 440.188                 | N/A                                      |
-    | 36 | 2 | 3          | 6753.187                | N/A                                      |
-    
+    | V  | L | Conn Level | Running Time (sec) MSCW | Running Time (sec) (2Nodes) | Connectivity (2Nodes) |
+    | -- | - | ---------- | ----------------------- | --------------------------- | --------------------- |
+    | 36 | 2 | 1          | 83.546                  | 13.2                        | 87 %                  |
+    | 36 | 2 | 2          | 440.188                 | 12.64                       | 99 %                  |
+    | 36 | 2 | 3          | 6753.187                | 12.72                       | 100 %                 |
+
 - A-Conn vs. 2Nodes connectivity (&#9989;)
     |Algorithm| Number of States | Transmission Range | Connectivity Difference |
     | ------- | ---------------- | ------------------ | ----------------------- |
