@@ -75,14 +75,14 @@ The Two-Terminal connectivity algorithm computes the connectivity between two no
     | 14 | 2 | 9 | 58                            | 77                                | 3.72                        |
     | 15 | 2 | 9 | 65                            | 70                                | 4.58                        |
 
-- P-COMP vs. 2Nodes connectivity (varying Loc max) &#9874;
-    | V | L | K | Connectivity Average (P-Comp) (%) | Connectivity Average (2Nodes) (%) |
-    | - | - | - | --------------------------------- | --------------------------------- |
-    | 8 | 2 | 9 | 83                                | N/A                           |
-    | 8 | 3 | 9 | 63                                | N/A                           |
-    | 8 | 4 | 9 | 36                                | N/A                           |
-    | 8 | 5 | 9 | 14                                | N/A                           |
-    | 8 | 6 | 9 | 16                                | N/A                           |
+- P-COMP vs. 2Nodes connectivity (varying Loc max) (&#9989;)
+    | V | L | K | Connectivity Average (P-Comp) (%) | Connectivity Average (2Nodes) (%) | Running Time (2Nodes) (sec) |
+    | - | - | - | --------------------------------- | --------------------------------- | --------------------------- |
+    | 8 | 2 | 9 | 83                                | 59                                | 2.26                        |
+    | 8 | 3 | 9 | 63                                | 55                                | 3.73                        |
+    | 8 | 4 | 9 | 36                                | 68                                | 10.62                       |
+    | 8 | 5 | 9 | 14                                | 47                                | 18.61                       |
+    | 8 | 6 | 9 | 16                                | 9                                 | 20.06                       |
     
    
 
