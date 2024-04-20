@@ -51,38 +51,38 @@ The Two-Terminal connectivity algorithm computes the connectivity between two no
  # Experiments
  -  MSCW vs. 2Nodes connectivity (Category: Effect of increasing node transmission radius)  (&#9989;)
     
-    | V  | L | Conn Level | Running Time (sec) MSCW | Running Time (sec) (2Nodes) | Connectivity (2Nodes) |
-    | -- | - | ---------- | ----------------------- | --------------------------- | --------------------- |
-    | 36 | 2 | 1          | 83.546                  | 13.2                        | 87 %                  |
-    | 36 | 2 | 2          | 440.188                 | 12.64                       | 99 %                  |
-    | 36 | 2 | 3          | 6753.187                | 12.72                       | 100 %                 |
+    | V  | L | Conn Level | Running Time (sec) MSCW | Running Time (sec) (2Nodes) | Connectivity (2Nodes) (%) |
+    | -- | - | ---------- | ----------------------- | --------------------------- | ------------------------- |
+    | 36 | 2 | 1          | 83.546                  | 13.2                        | 87                        |
+    | 36 | 2 | 2          | 440.188                 | 12.64                       | 99                        |
+    | 36 | 2 | 3          | 6753.187                | 12.72                       | 100                       |
 
 - A-Conn vs. 2Nodes connectivity (&#9989;)
-    |Algorithm| Number of States | Transmission Range | Connectivity Difference |
-    | ------- | ---------------- | ------------------ | ----------------------- |
-    | A-Conn  | ~ 1.7 M          | 5 units            | ~ 38 %                  |
-    | 2Nodes  | ~ 4.7 M          | 66%                | ~ 25 %                  |
-    | 2Nodes  | ~ 1.6 M          | 66%                | ~ 25 %                  |
+    |Algorithm| Number of States | Transmission Range (%) | Connectivity Difference (%) |
+    | ------- | ---------------- | ---------------------- | --------------------------- |
+    | A-Conn  | ~ 1.7 M          | 5 units                | ~ 38                        |
+    | 2Nodes  | ~ 4.7 M          | 66                     | ~ 25                        |
+    | 2Nodes  | ~ 1.6 M          | 66                     | ~ 25                        |
 
-- P-COMP vs. 2Nodes connectivity (varying V) &#9874;
-    | V  | L | K | Connectivity Average (P-Comp) | Connectivity Average (2Nodes) |
-    | -- | - | - | ----------------------------- | ----------------------------- |
-    | 9  | 2 | 9 | 35 %                          | N/A                           |
-    | 10 | 2 | 9 | 40 %                          | N/A                           |
-    | 11 | 2 | 9 | 45 %                          | N/A                           |
-    | 12 | 2 | 9 | 48 %                          | N/A                           |
-    | 13 | 2 | 9 | 53 %                          | N/A                           |
-    | 14 | 2 | 9 | 58 %                          | N/A                           |
-    | 15 | 2 | 9 | 65 %                          | N/A                           |
+- P-COMP vs. 2Nodes connectivity (varying V) (&#9989;)
+    | V  | L | K | Connectivity Avg (P-Comp) (%) | Connectivity Average (2Nodes) (%) | Running Time (2Nodes) (sec) |
+    | -- | - | - | ----------------------------- | --------------------------------- | --------------------------- |
+    | 9  | 2 | 9 | 35                            | 68                                | 2.5                         |
+    | 10 | 2 | 9 | 40                            | 71                                | 3                           |
+    | 11 | 2 | 9 | 45                            | 75                                | 2.9                         |
+    | 12 | 2 | 9 | 48                            | 68                                | 3.75                        |
+    | 13 | 2 | 9 | 53                            | 60                                | 3.23                        |
+    | 14 | 2 | 9 | 58                            | 77                                | 3.72                        |
+    | 15 | 2 | 9 | 65                            | 70                                | 4.58                        |
 
 - P-COMP vs. 2Nodes connectivity (varying Loc max) &#9874;
-    | V | L | K | Connectivity Average (P-Comp) | Connectivity Average (2Nodes) |
-    | - | - | - | ----------------------------- | ----------------------------- |
-    | 8 | 2 | 9 | .83                           | N/A                           |
-    | 8 | 3 | 9 | .63                           | N/A                           |
-    | 8 | 4 | 9 | .36                           | N/A                           |
-    | 8 | 5 | 9 | .14                           | N/A                           |
-    | 8 | 6 | 9 | .16                           | N/A                           |
+    | V | L | K | Connectivity Average (P-Comp) (%) | Connectivity Average (2Nodes) (%) |
+    | - | - | - | --------------------------------- | --------------------------------- |
+    | 8 | 2 | 9 | 83                                | N/A                           |
+    | 8 | 3 | 9 | 63                                | N/A                           |
+    | 8 | 4 | 9 | 36                                | N/A                           |
+    | 8 | 5 | 9 | 14                                | N/A                           |
+    | 8 | 6 | 9 | 16                                | N/A                           |
     
    
 
