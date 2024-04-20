@@ -51,25 +51,53 @@ The Two-Terminal connectivity algorithm computes the connectivity between two no
  # Experiments
  -  MSCW vs. 2Nodes connectivity (Category: Effect of increasing node transmission radius)  (&#9874;)
     
-    | V  | Loc Max | Conn Level | Running Time (sec) MSCW | Running Time (sec) (2Nodes connectivity) |
-    | ----	|---------	|------------	|---------	|---------|
-    | 36 | 2 | 1 | 83.546   | N/A |
-    | 36 | 2 | 2 | 440.188  | N/A |
-    | 36 | 2 | 3 | 6753.187 | N/A |
-- Tree Bound vs. 2Nodes connectivity  
-    Algorithm | Number of States | Transmission Range | Connectivity Difference |
+    | V  | L | Conn Level | Running Time (sec) MSCW | Running Time (sec) (2Nodes connectivity) |
+    | -- | - | ---------- | ----------------------- | ---------------------------------------- |
+    | 36 | 2 | 1          | 83.546                  | N/A                                      |
+    | 36 | 2 | 2          | 440.188                 | N/A                                      |
+    | 36 | 2 | 3          | 6753.187                | N/A                                      |
+    
+- A-Conn vs. 2Nodes connectivity (&#9989;)
+    |Algorithm| Number of States | Transmission Range | Connectivity Difference |
     | ------- | ---------------- | ------------------ | ----------------------- |
     | A-Conn  | ~ 1.7 M          | 5 units            | ~ 38 %                  |
     | 2Nodes  | ~ 4.7 M          | 66%                | ~ 25 %                  |
     | 2Nodes  | ~ 1.6 M          | 66%                | ~ 25 %                  |
 
+- P-COMP vs. 2Nodes connectivity (varying V) &#9874;
+    | V  | L | K | Connectivity Average (P-Comp) | Connectivity Average (2Nodes) |
+    | -- | - | - | ----------------------------- | ----------------------------- |
+    | 9  | 2 | 9 | .345                          | N/A                           |
+    | 10 | 2 | 9 | .4025                         | N/A                           |
+    | 11 | 2 | 9 | .4475                         | N/A                           |
+    | 12 | 2 | 9 | .4825                         | N/A                           |
+    | 13 | 2 | 9 | .5275                         | N/A                           |
+    | 14 | 2 | 9 | .58                           | N/A                           |
+    | 15 | 2 | 9 | .6475                         | N/A                           |
+
+- P-COMP vs. 2Nodes connectivity (varying Loc max) &#9874;
+    | V | L | K | Connectivity Average (P-Comp) | Connectivity Average (2Nodes) |
+    | - | - | - | ----------------------------- | ----------------------------- |
+    | 8 | 2 | 9 | .83                           | N/A                           |
+    | 8 | 3 | 9 | .63                           | N/A                           |
+    | 8 | 4 | 9 | .36                           | N/A                           |
+    | 8 | 5 | 9 | .14                           | N/A                           |
+    | 8 | 6 | 9 | .16                           | N/A                           |
+    
    
 
-##
+# Misc
 - MSCW: Multistate Component Weight (MSCW) problem
  > "On Connected Components in Multistate Wireless Sensor Network Probabilistic Models"
 
 they have 36 nodes, 2 and 3 loc_max, and 3 different connection levels. 
-- Epoch2014: Islam 2013 papaer, they have 20 nodes max, 8 loc_max , and connevetivty levels range from 3.5 to 6.5
-- Epoch2018: need the paper (&#9874;)
+- A-Conn: 
+> "Tree bound on probabilistic connectivity of Underwater Sensor Networks" 
+
+they have 20 nodes max, 8 loc_max , and connevetivty levels range from 3.5 to 6.5
+
+- P-COMP:
+> "On_Probabilistic_Connected_Components_in_Underwater_Sensor_Networks"
+
+They vary the node numbers to 15 and loc max to 6 
 
