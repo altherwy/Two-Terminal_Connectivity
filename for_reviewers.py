@@ -159,7 +159,11 @@ if __name__ == "__main__":
         number_nodes = int(df_experiment_list.iloc[i]['number_nodes'])
         loc_set_max = int(df_experiment_list.iloc[i]['loc_set_max'])
         connection_level = int(df_experiment_list.iloc[i]['connection_level'])
-        v,loc_max,conn_level,conn, runn_time =  main()
+        try:
+            v,loc_max,conn_level,conn, runn_time =  main()
+        except:
+            continue
+        
         ser = pd.Series([v,loc_max,conn_level,conn,runn_time],index=df_results.columns)
         df_results = pd.concat([df_results,ser.to_frame().T],axis=0)
     

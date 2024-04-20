@@ -100,6 +100,7 @@ class DisjointPaths:
             filteredList.sort(key=len)
             filteredList.reverse
             outputList:list= [filteredList[0]]
+            
             for i in range(1,len(filteredList)):
                 temp:list= filteredList[i]
                 flag:bool = True # Permission to Add
@@ -119,8 +120,9 @@ class DisjointPaths:
             disjointPathTerminals:list= []
             for disjointPath in outputList:
                 disjointPath.insert(0,'S')
-                disjointPath.insert(len(disjointPath),'T')
+                disjointPath.insert(len(disjointPath),'T')    
                 disjointPathTerminals.append(disjointPath)
+
             return disjointPathTerminals
             
         disjointPaths = addTerminalsToDisjointPaths(removeOverlapPaths(disjointPaths))    
