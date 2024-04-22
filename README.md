@@ -87,19 +87,19 @@ The Two-Terminal connectivity algorithm computes the connectivity between two no
     
    
 - Large Dataset
-    | V   | L | Connectivity (2Nodes) (%) |
-    | --- | - | ------------------------- |
-    | 50  | 3 | N/A                       |
-    | 55  | 3 | N/A                       |
-    | 60  | 3 | N/A                       |
-    | 65  | 3 | N/A                       |
-    | 70  | 3 | N/A                       |
-    | 75  | 3 | N/A                       |
-    | 80  | 3 | N/A                       |
-    | 85  | 3 | N/A                       |
-    | 90  | 3 | N/A                       |
-    | 95  | 3 | N/A                       |
-    | 100 | 3 | N/A                       |
+    | V   | L | Connectivity (2Nodes) (%) | Running Time (2Nodes) (sec) |
+    | --- | - | ------------------------- | --------------------------- |
+    | 50  | 3 | N/A                       | N/A				|
+    | 55  | 3 | N/A                       |				|
+    | 60  | 3 | N/A                       |				|
+    | 65  | 3 | N/A                       |				|
+    | 70  | 3 | N/A                       |				|
+    | 75  | 3 | N/A                       |				|
+    | 80  | 3 | N/A                       |				|
+    | 85  | 3 | N/A                       |				|
+    | 90  | 3 | N/A                       |				|
+    | 95  | 3 | N/A                       |				|
+    | 100 | 3 | 100                       | 68.4			|
     
 # Misc
 - MSCW: Multistate Component Weight (MSCW) problem
