@@ -1,14 +1,31 @@
-﻿nodes,locality_sets,count
-7,3,4
-8,2,4
-8,3,4
-8,4,4
-8,5,5
-9,3,4
-10,3,4
-10,4,6
-11,3,4
-11,4,5
-12,3,5
-13,3,5
-14,3,5
+﻿nodes,locality_sets,count,notes
+7,3,4,Exhaustive vs. 2Nodes
+8,2,4,Exhaustive vs. 2Nodes
+8,3,4,Exhaustive vs. 2Nodes
+8,4,4,Exhaustive vs. 2Nodes
+8,5,5,Exhaustive vs. 2Nodes
+9,3,4,Exhaustive vs. 2Nodes
+10,3,4,Exhaustive vs. 2Nodes
+11,3,4,Exhaustive vs. 2Nodes
+12,3,5,Exhaustive vs. 2Nodes
+13,3,5,Exhaustive vs. 2Nodes
+14,3,5,Exhaustive vs. 2Nodes
+36,2,15,MSCW vs. 2Nodes
+9,2,5,P-COMP vs. 2Nodes
+10,2,5,P-COMP vs. 2Nodes
+11,2,5,P-COMP vs. 2Nodes
+12,2,5,P-COMP vs. 2Nodes
+13,2,5,P-COMP vs. 2Nodes
+14,2,5,P-COMP vs. 2Nodes
+15,2,5,P-COMP vs. 2Nodes
+50,3,5,Large Dataset
+55,3,5,Large Dataset
+60,3,5,Large Dataset
+65,3,5,Large Dataset
+70,3,5,Large Dataset
+75,3,5,Large Dataset
+80,3,5,Large Dataset
+85,3,5,Large Dataset
+90,3,5,Large Dataset
+95,3,5,Large Dataset
+100,3,5,Large Dataset

@@ -66,7 +66,8 @@ plt.grid()
 ax.xaxis.label.set_fontweight('bold')
 ax.yaxis.label.set_fontweight('bold')
 set_fonts()
-plt.savefig('figures/nodes vs connectivity.png', dpi=resolution, format='png')
+plt.show()
+#plt.savefig('figures/nodes vs connectivity.png', dpi=resolution, format='png')
 '''
 ///////////////////////////////////////////
 End of nodes vs. connectivity (MF algorithm)
@@ -82,12 +83,13 @@ fig, ax = plt.subplots()
 b = ax.bar(df_nodes.index, df_nodes['diff'], zorder = 3)
 plt.xlabel('$V$')
 plt.ylabel('Difference (%)')
-plt.grid()
+
 ax.xaxis.label.set_fontweight('bold')
 ax.yaxis.label.set_fontweight('bold')
+plt.grid(zorder = 7)
 set_fonts()
-#plt.show()
-plt.savefig('figures/diff_nodes_vs_connectivity.png', dpi=resolution, format='png')
+plt.show()
+#plt.savefig('figures/diff_nodes_vs_connectivity.png', dpi=resolution, format='png')
 
 '''
 ///////////////////////////////////////////////////////////////////
