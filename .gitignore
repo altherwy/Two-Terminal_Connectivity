@@ -4,3 +4,4 @@ loc_data/
 links_data/
 MDPI Article Template/
 *.pyc
+.DS_Store
