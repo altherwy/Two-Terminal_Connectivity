@@ -58,6 +58,18 @@ The Two-Terminal connectivity algorithm computes the connectivity between two no
     | 36 | 2 | 2          | 440.188                 | 12.64                       | 99                        |
     | 36 | 2 | 3          | 6753.187                | 12.72                       | 100                       |
 
+
+- MSCW vs. 2Nodes connectivity (Category: Effect of increasing node operating probabilities)
+
+    | V  | L | Conn Level (%) | Connectivity MSCW (%) | Connectivity 2Nodes (%) |
+    | -- | - | -------------- | --------------------- | ----------------------- |
+    | 36 | 1 | 50	      | 25 		      | N/A			|
+    | 36 | 1 | 60	      | 60 		      | N/A			|
+    | 36 | 1 | 70	      | 89 		      | N/A			|
+    | 36 | 1 | 80	      | 98.5 		      | N/A			|
+    | 36 | 1 | 90	      | 99.5 		      | N/A			|
+    | 36 | 1 | 100	      | 100 		      | N/A			|
+
 - A-Conn vs. 2Nodes connectivity (&#9989;)
     |Algorithm| Number of States | Transmission Range (%) | Connectivity Difference (%) |
     | ------- | ---------------- | ---------------------- | --------------------------- |
