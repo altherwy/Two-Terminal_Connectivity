@@ -375,28 +375,23 @@ y = [1.1,1.574302976,2.143484776,2.712666576,3.281848376
 ,10.11202998
 ,10.68121178
 ,11.25039358]
+z = [0.1]*len(x)
 #%%
 fig, ax = plt.subplots()
-#ax.tick_params(axis='both', which='major', labelsize=12, width=2, length=6, direction='in', pad=10, weight='bold')
-ax.bar(x, y, label='2Nodes Algorithm') # type: ignore
+ax.bar(x, y, width=7, yerr=z, label='$2Nodes$') # type: ignore
 ax.legend()
-#ax.errorbar(df_nodes.index, df_nodes['mean_exh_conn'], yerr=df_nodes['std_exh_conn'], label='Exact', fmt='*-') # type: ignore
+ax.errorbar(x, y, yerr=z, label='$2Nodes$', fmt='*-') # type: ignore
 #ax.errorbar(df_nodes.index, df_nodes['mean_ttc_conn'], yerr=df_nodes['std_ttc_conn'], label='Lower Bound', fmt='o-') # type: ignore
-plt.xlabel('$V$')
-plt.ylabel('Running Time (mins)')
+ax.set_xlabel('$V$')
+ax.set_ylabel('Running Time (mins)')
 #plt.ylim(ylim)
-plt.grid()
+
 ax.xaxis.label.set_fontweight('bold')
 ax.yaxis.label.set_fontweight('bold')
 set_fonts()
-plt.show()
+plt.grid()
+plt.savefig('figures/large_networks.png', dpi=resolution, format='png')
+#plt.show()
 
 
-
-# %%
-len(x)
-# %%
-len(y)
-# %%
-x
 # %%
