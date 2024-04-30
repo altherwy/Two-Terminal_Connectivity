@@ -443,3 +443,27 @@ plt.savefig('figures/mscw_2nodes_operating_probs.png', dpi=resolution, format='p
 #plt.show()
 
 # %%
+'''
+//////////////////////////////////////////
+P-COMP vs. 2Nodes (Varying V)
+//////////////////////////////////////////
+'''
+x = [9,10,11,12,13,14,15]
+p_comp = [35, 40, 45, 48, 53, 58, 65]
+two_nodes = [68, 71, 75, 68, 60, 77, 70]
+fig, ax = plt.subplots()
+ax.plot(x, p_comp, marker= '*', linestyle = '-', label='P-COMP') # type: ignore
+#ax.plot(x, two_nodes, marker= 'o', linestyle = '-', label='$2Nodes$') # type: ignore
+
+ax.errorbar(x, two_nodes, yerr=1, label='$2Nodes$', fmt='o-') # type: ignore
+
+ax.legend()
+ax.set_xlabel('$V$')
+ax.set_ylabel('Connectivity (%)')
+ax.xaxis.label.set_fontweight('bold')
+ax.yaxis.label.set_fontweight('bold')
+set_fonts()
+plt.grid()
+plt.savefig('figures/p_comp_2nodes_v.png', dpi=resolution, format='png')
+#plt.show()
+# %%
