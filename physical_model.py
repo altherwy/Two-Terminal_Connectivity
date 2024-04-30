@@ -395,3 +395,22 @@ plt.savefig('figures/large_networks.png', dpi=resolution, format='png')
 
 
 # %%
+x = ['low','medium','high']
+mscw = [84/60,440/60,6753/60]
+two_nodes = [13/60,13/60,13/60]
+fig, ax = plt.subplots()
+ax.bar(x, mscw, width=0.3, label='MSCW') # type: ignore
+ax.bar(x, two_nodes, width=0.3, label='$2Nodes$') # type: ignore
+ax.legend()
+ax.set_xlabel('Transmission Radius')
+ax.set_ylabel('Running Time (mins)')
+ax.xaxis.label.set_fontweight('bold')
+ax.yaxis.label.set_fontweight('bold')
+set_fonts()
+plt.grid()
+plt.savefig('figures/mscw_2nodes_radius.png', dpi=resolution, format='png')
+
+
+
+
+# %%
