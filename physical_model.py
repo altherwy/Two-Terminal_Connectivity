@@ -376,7 +376,7 @@ y = [1.1,1.574302976,2.143484776,2.712666576,3.281848376
 ,10.68121178
 ,11.25039358]
 z = [0.1]*len(x)
-#%%
+
 fig, ax = plt.subplots()
 ax.bar(x, y, width=7, yerr=z, label='$2Nodes$') # type: ignore
 ax.legend()
@@ -395,12 +395,19 @@ plt.savefig('figures/large_networks.png', dpi=resolution, format='png')
 
 
 # %%
+'''
+//////////////////////////////////////////
+MSCW vs. 2Nodes (Transmission Radius)
+//////////////////////////////////////////
+'''
 x = ['low','medium','high']
 mscw = [84/60,440/60,6753/60]
-two_nodes = [13/60,13/60,13/60]
+two_nodes = [30/60,30/60,30/60]
 fig, ax = plt.subplots()
 ax.bar(x, mscw, width=0.3, label='MSCW') # type: ignore
-ax.bar(x, two_nodes, width=0.3, label='$2Nodes$') # type: ignore
+ax.bar(x, two_nodes, width=0.3, label='$2Nodes$', zorder = 3) # type: ignore
+
+
 ax.legend()
 ax.set_xlabel('Transmission Radius')
 ax.set_ylabel('Running Time (mins)')
@@ -409,8 +416,30 @@ ax.yaxis.label.set_fontweight('bold')
 set_fonts()
 plt.grid()
 plt.savefig('figures/mscw_2nodes_radius.png', dpi=resolution, format='png')
+#plt.show()
+
+# %%
+'''
+//////////////////////////////////////////
+MSCW vs. 2Nodes (Operating Probabilities)
+//////////////////////////////////////////
+'''
+x = [50,60,70,80,90,100]
+mscw = [25, 60, 89, 98.5, 99, 99]
+two_nodes = [75, 98, 100, 100, 100, 100]
+fig, ax = plt.subplots()
+ax.bar(x, mscw, width=2, label='MSCW', zorder = 3) # type: ignore
+ax.bar(x, two_nodes, width=2, label='$2Nodes$') # type: ignore
 
 
-
+ax.legend()
+ax.set_xlabel('Operating Probabilities (%)')
+ax.set_ylabel('Connectivity (%)')
+ax.xaxis.label.set_fontweight('bold')
+ax.yaxis.label.set_fontweight('bold')
+set_fonts()
+plt.grid()
+plt.savefig('figures/mscw_2nodes_operating_probs.png', dpi=resolution, format='png')
+#plt.show()
 
 # %%
