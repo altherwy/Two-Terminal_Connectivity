@@ -354,3 +354,49 @@ ax.yaxis.pane.fill = False
 ax.zaxis.pane.fill = False
 plt.savefig('figures/nodes_loc_set_count.png', format='png', bbox_inches=0, dpi=resolution)
 # %%
+'''
+//////////////////////////////////////////
+Large Networks 
+//////////////////////////////////////////
+'''
+x = list(range(100,1010,50))
+y = [1.1,1.574302976,2.143484776,2.712666576,3.281848376
+,3.851030176
+,4.420211976
+,4.989393776
+,5.558575576
+,6.127757376
+,6.696939176
+,7.266120976
+,7.835302776
+,8.404484576
+,8.973666376
+,9.542848176
+,10.11202998
+,10.68121178
+,11.25039358]
+#%%
+fig, ax = plt.subplots()
+#ax.tick_params(axis='both', which='major', labelsize=12, width=2, length=6, direction='in', pad=10, weight='bold')
+ax.bar(x, y, label='2Nodes Algorithm') # type: ignore
+ax.legend()
+#ax.errorbar(df_nodes.index, df_nodes['mean_exh_conn'], yerr=df_nodes['std_exh_conn'], label='Exact', fmt='*-') # type: ignore
+#ax.errorbar(df_nodes.index, df_nodes['mean_ttc_conn'], yerr=df_nodes['std_ttc_conn'], label='Lower Bound', fmt='o-') # type: ignore
+plt.xlabel('$V$')
+plt.ylabel('Running Time (mins)')
+#plt.ylim(ylim)
+plt.grid()
+ax.xaxis.label.set_fontweight('bold')
+ax.yaxis.label.set_fontweight('bold')
+set_fonts()
+plt.show()
+
+
+
+# %%
+len(x)
+# %%
+len(y)
+# %%
+x
+# %%
